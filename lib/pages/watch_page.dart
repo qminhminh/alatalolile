@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -25,13 +27,18 @@ class _WatchPageState extends State<WatchPage> {
   double volume = 1;
   bool showEpisodes = false;
   bool loadingEpisode = false;
+  bool controlsVisible = true;
+  Timer? controlsTimer;
   @override
   void initState() {
     super.initState();
     currentEpisode = widget.episode;
     controller = _createController(widget.episode);
     controller.initialize().then((_) {
-      if (mounted) setState(() {});
+      if (mounted) {
+        setState(() {});
+        _showControls();
+      }
     });
   }
 
@@ -53,6 +60,7 @@ class _WatchPageState extends State<WatchPage> {
       if (mounted) {
         await controller.play();
         setState(() => loadingEpisode = false);
+        _showControls();
       }
     } catch (_) {
       if (mounted) setState(() => loadingEpisode = false);
@@ -61,6 +69,7 @@ class _WatchPageState extends State<WatchPage> {
 
   @override
   void dispose() {
+    controlsTimer?.cancel();
     controller.pause();
     controller.dispose();
     super.dispose();
@@ -94,6 +103,13 @@ class _WatchPageState extends State<WatchPage> {
                 else
                   const Center(child: CircularProgressIndicator()),
                 if (controller.value.isInitialized)
+                  Positioned.fill(
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.translucent,
+                      onTap: _showControls,
+                    ),
+                  ),
+                if (controller.value.isInitialized && controlsVisible)
                   Positioned(
                     top: 14,
                     left: 0,
@@ -256,6 +272,16 @@ class _WatchPageState extends State<WatchPage> {
       ),
     ),
   );
+
+  void _showControls() {
+    controlsTimer?.cancel();
+    if (mounted) setState(() => controlsVisible = true);
+    controlsTimer = Timer(const Duration(seconds: 5), () {
+      if (mounted && controller.value.isPlaying) {
+        setState(() => controlsVisible = false);
+      }
+    });
+  }
 
   KeyEventResult _handleKeyEvent(FocusNode node, KeyEvent event) {
     if (event is! KeyDownEvent && event is! KeyRepeatEvent) {
