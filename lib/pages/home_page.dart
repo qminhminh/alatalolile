@@ -60,8 +60,9 @@ class _HomePageState extends State<HomePage> {
   void _selectSection(int index) {
     setState(() => selected = index);
     const sections = <(String, String)>[
-      ('Phim mới cập nhật', ''),
+      ('Trang chủ', ''),
       ('Tìm kiếm', ''),
+      ('Phim mới', ''),
       ('Phim lẻ', 'phim-le'),
       ('Phim bộ', 'phim-bo'),
       ('TV Shows', 'tv-shows'),
