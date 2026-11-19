@@ -49,63 +49,138 @@ class _WatchPageState extends State<WatchPage> {
           aspectRatio: controller.value.isInitialized
               ? controller.value.aspectRatio
               : 16 / 9,
-          child: controller.value.isInitialized
-              ? VideoPlayer(controller)
-              : const Center(child: CircularProgressIndicator()),
-        ),
-        VideoProgressIndicator(
-          controller,
-          allowScrubbing: true,
-          padding: const EdgeInsets.all(12),
-          colors: const VideoProgressColors(playedColor: Color(0xFFFFC107)),
-        ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            IconButton(
-              onPressed: () => controller.seekTo(
-                controller.value.position - const Duration(seconds: 10),
-              ),
-              icon: const Icon(CupertinoIcons.gobackward_10),
-            ),
-            IconButton(
-              onPressed: () async {
-                volume = volume > 0 ? 0 : 1;
-                await controller.setVolume(volume);
-                if (mounted) setState(() {});
-              },
-              icon: Icon(
-                volume == 0
-                    ? CupertinoIcons.volume_off
-                    : CupertinoIcons.volume_up,
-              ),
-            ),
-            SizedBox(
-              width: 120,
-              child: Slider(
-                value: volume,
-                onChanged: (value) async {
-                  setState(() => volume = value);
-                  await controller.setVolume(value);
-                },
-                activeColor: const Color(0xFFFFC107),
-              ),
-            ),
-            IconButton(
-              onPressed: _togglePlayback,
-              icon: Icon(
-                controller.value.isPlaying
-                    ? CupertinoIcons.pause_fill
-                    : CupertinoIcons.play_fill,
-              ),
-            ),
-            IconButton(
-              onPressed: () => controller.seekTo(
-                controller.value.position + const Duration(seconds: 10),
-              ),
-              icon: const Icon(CupertinoIcons.goforward_10),
-            ),
-          ],
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              controller.value.isInitialized
+                  ? VideoPlayer(controller)
+                  : const Center(child: CircularProgressIndicator()),
+              if (controller.value.isInitialized)
+                Positioned(
+                  top: 14,
+                  left: 0,
+                  right: 0,
+                  child: Center(
+                    child: Text(
+                      '${widget.movie.name} (${widget.movie.year}) • ${widget.episode.name}',
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        shadows: [Shadow(blurRadius: 6, color: Colors.black)],
+                      ),
+                    ),
+                  ),
+                ),
+              if (controller.value.isInitialized)
+                Center(
+                  child: GestureDetector(
+                    onTap: _togglePlayback,
+                    child: CircleAvatar(
+                      radius: 34,
+                      backgroundColor: Colors.white.withValues(alpha: .9),
+                      child: Icon(
+                        controller.value.isPlaying
+                            ? CupertinoIcons.pause_fill
+                            : CupertinoIcons.play_fill,
+                        color: Colors.black,
+                        size: 32,
+                      ),
+                    ),
+                  ),
+                ),
+              if (controller.value.isInitialized)
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  child: SizedBox(
+                    height: 68,
+                    child: DecoratedBox(
+                      decoration: const BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [Colors.transparent, Color(0xDD000000)],
+                        ),
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          VideoProgressIndicator(
+                            controller,
+                            allowScrubbing: true,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 1,
+                            ),
+                            colors: const VideoProgressColors(
+                              playedColor: Color(0xFFFFC107),
+                              bufferedColor: Colors.white38,
+                              backgroundColor: Colors.white24,
+                            ),
+                          ),
+                          Transform.translate(
+                            offset: const Offset(0, -52),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                IconButton(
+                                  onPressed: () => controller.seekTo(
+                                    controller.value.position -
+                                        const Duration(seconds: 10),
+                                  ),
+                                  icon: const Icon(
+                                    CupertinoIcons.gobackward_10,
+                                  ),
+                                ),
+                                IconButton(
+                                  onPressed: () async {
+                                    volume = volume > 0 ? 0 : 1;
+                                    await controller.setVolume(volume);
+                                    if (mounted) setState(() {});
+                                  },
+                                  icon: Icon(
+                                    volume == 0
+                                        ? CupertinoIcons.volume_off
+                                        : CupertinoIcons.volume_up,
+                                  ),
+                                ),
+                                SizedBox(
+                                  width: 120,
+                                  child: Slider(
+                                    value: volume,
+                                    onChanged: (value) async {
+                                      setState(() => volume = value);
+                                      await controller.setVolume(value);
+                                    },
+                                    activeColor: const Color(0xFFFFC107),
+                                  ),
+                                ),
+                                IconButton(
+                                  onPressed: _togglePlayback,
+                                  icon: Icon(
+                                    controller.value.isPlaying
+                                        ? CupertinoIcons.pause_fill
+                                        : CupertinoIcons.play_fill,
+                                  ),
+                                ),
+                                IconButton(
+                                  onPressed: () => controller.seekTo(
+                                    controller.value.position +
+                                        const Duration(seconds: 10),
+                                  ),
+                                  icon: const Icon(CupertinoIcons.goforward_10),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
         ),
       ],
     ),
