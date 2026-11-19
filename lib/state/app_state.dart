@@ -1,5 +1,9 @@
 import 'package:flutter/foundation.dart';
 
+import 'dart:convert';
+
+import 'package:shared_preferences/shared_preferences.dart';
+
 import '../data/movie_repository.dart';
 import '../models/movie.dart';
 
@@ -20,6 +24,52 @@ class AppState extends ChangeNotifier {
   String sortType = 'desc';
   String? language, category, country;
   int? year;
+  final List<Movie> favorites = [];
+
+  Future<void> loadFavorites() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getStringList('favorite_movies') ?? const [];
+    favorites
+      ..clear()
+      ..addAll(
+        raw.map(
+          (item) => Movie.fromJson(jsonDecode(item) as Map<String, dynamic>),
+        ),
+      );
+    notifyListeners();
+  }
+
+  Future<void> toggleFavorite(Movie movie) async {
+    final index = favorites.indexWhere((item) => item.slug == movie.slug);
+    if (index >= 0) {
+      favorites.removeAt(index);
+    } else {
+      favorites.add(movie);
+    }
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(
+      'favorite_movies',
+      favorites
+          .map(
+            (item) => jsonEncode({
+              'slug': item.slug,
+              'name': item.name,
+              'origin_name': item.original,
+              'poster_url': item.poster,
+              'thumb_url': item.thumb,
+              'year': item.year,
+              'episode_current': item.episode,
+              'quality': item.quality,
+              'time': item.time,
+              'category': item.categories,
+            }),
+          )
+          .toList(),
+    );
+    notifyListeners();
+  }
+
+  bool isFavorite(String slug) => favorites.any((item) => item.slug == slug);
 
   Future<void> loadLatest() async {
     loading = true;

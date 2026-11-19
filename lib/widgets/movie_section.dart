@@ -8,11 +8,13 @@ class MovieSection extends StatelessWidget {
     required this.title,
     required this.movies,
     required this.onMovieTap,
+    this.onViewAll,
     super.key,
   });
   final String title;
   final List<Movie> movies;
   final ValueChanged<Movie> onMovieTap;
+  final VoidCallback? onViewAll;
   @override
   Widget build(BuildContext context) => Column(
     crossAxisAlignment: CrossAxisAlignment.start,
@@ -24,7 +26,14 @@ class MovieSection extends StatelessWidget {
             style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
           ),
           const Spacer(),
-          const Text('Xem tất cả', style: TextStyle(color: Color(0xFFFFC107))),
+          if (onViewAll != null)
+            TextButton(
+              onPressed: onViewAll,
+              child: const Text(
+                'Xem tất cả',
+                style: TextStyle(color: Color(0xFFFFC107)),
+              ),
+            ),
         ],
       ),
       const SizedBox(height: 16),

@@ -1,7 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../models/movie.dart';
+import '../state/app_state.dart';
 
 class MovieCard extends StatelessWidget {
   const MovieCard({required this.movie, required this.onTap, super.key});
@@ -50,13 +52,26 @@ class _Poster extends StatelessWidget {
           errorBuilder: (_, __, ___) => const ColoredBox(color: Colors.white10),
         ),
       ),
-      const Positioned(
+      Positioned(
         top: 8,
         left: 8,
-        child: CircleAvatar(
-          radius: 16,
-          backgroundColor: Colors.black87,
-          child: Icon(CupertinoIcons.heart, size: 17),
+        child: Consumer<AppState>(
+          builder: (_, state, __) => GestureDetector(
+            onTap: () => state.toggleFavorite(movie),
+            child: CircleAvatar(
+              radius: 16,
+              backgroundColor: Colors.black87,
+              child: Icon(
+                state.isFavorite(movie.slug)
+                    ? CupertinoIcons.heart_fill
+                    : CupertinoIcons.heart,
+                size: 17,
+                color: state.isFavorite(movie.slug)
+                    ? const Color(0xFFFFC107)
+                    : Colors.white,
+              ),
+            ),
+          ),
         ),
       ),
       Positioned(

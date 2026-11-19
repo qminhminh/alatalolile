@@ -9,7 +9,9 @@ class AlatalolileApp extends StatelessWidget {
   const AlatalolileApp({super.key});
   @override
   Widget build(BuildContext context) => ChangeNotifierProvider(
-    create: (_) => AppState(MovieRepository())..loadLatest(),
+    create: (_) => AppState(MovieRepository())
+      ..loadLatest()
+      ..loadFavorites(),
     child: MaterialApp(
       title: 'alatalolile',
       debugShowCheckedModeBanner: false,

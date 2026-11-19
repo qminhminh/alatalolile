@@ -62,9 +62,11 @@ class AppSidebar extends StatelessWidget {
           ),
           const Spacer(),
           const Divider(color: Colors.white12),
-          const ListTile(
-            leading: Icon(CupertinoIcons.gear),
-            title: Text('Cài đặt'),
+          ListTile(
+            onTap: () => onSelected(10),
+            selected: selected == 10,
+            leading: Icon(CupertinoIcons.heart_fill),
+            title: const Text('Yêu thích'),
           ),
         ],
       ),

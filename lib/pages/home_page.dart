@@ -77,11 +77,12 @@ class _HomePageState extends State<HomePage> {
                 child: detail == null
                     ? Column(
                         children: [
-                          if (selected >= 1)
+                          if (selected >= 1 && selected != 10)
                             MovieFilter(type: _typeForIndex(selected)),
                           Expanded(
                             child: _Results(
                               showAll: selected == 0,
+                              favoritesOnly: selected == 10,
                               onTap: (movie) => setState(() => detail = movie),
                             ),
                           ),
@@ -105,6 +106,7 @@ class _HomePageState extends State<HomePage> {
       selected = index;
       detail = null;
     });
+    if (index >= 10) return;
     const sections = <(String, String)>[
       ('Trang chủ', ''),
       ('Phim mới', 'phim-moi-cap-nhat-v3'),
@@ -235,12 +237,29 @@ class _Suggestions extends StatelessWidget {
 }
 
 class _Results extends StatelessWidget {
-  const _Results({required this.showAll, required this.onTap});
+  const _Results({
+    required this.showAll,
+    required this.favoritesOnly,
+    required this.onTap,
+  });
   final bool showAll;
+  final bool favoritesOnly;
   final ValueChanged<Movie> onTap;
   @override
   Widget build(BuildContext context) {
     final state = context.watch<AppState>();
+    if (favoritesOnly) {
+      return ListView(
+        padding: const EdgeInsets.all(30),
+        children: [
+          MovieSection(
+            title: 'Phim yêu thích',
+            movies: state.favorites,
+            onMovieTap: onTap,
+          ),
+        ],
+      );
+    }
     if (state.loading) {
       return const MovieSkeletonGrid();
     }
@@ -262,6 +281,9 @@ class _Results extends StatelessWidget {
                   title: entry.key,
                   movies: entry.value,
                   onMovieTap: onTap,
+                  onViewAll: () => context
+                      .findAncestorStateOfType<_HomePageState>()
+                      ?._selectSection(_sectionIndex(entry.key)),
                 ),
               ),
             )
@@ -307,6 +329,21 @@ class _Results extends StatelessWidget {
           ),
       ],
     );
+  }
+
+  int _sectionIndex(String title) {
+    const titles = [
+      'Phim mới cập nhật',
+      'Phim lẻ',
+      'Phim bộ',
+      'TV Shows',
+      'Hoạt hình',
+      'Việt sub',
+      'Thuyết minh',
+      'Lồng tiếng',
+    ];
+    final index = titles.indexOf(title);
+    return index < 0 ? 0 : index + 1;
   }
 }
 
@@ -467,7 +504,8 @@ class _Details extends StatelessWidget {
                       spacing: 16,
                       children: [
                         OutlinedButton.icon(
-                          onPressed: () {},
+                          onPressed: () =>
+                              context.read<AppState>().toggleFavorite(movie),
                           icon: const Icon(
                             CupertinoIcons.heart,
                             color: Color(0xFFFFC107),
