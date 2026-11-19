@@ -7,6 +7,7 @@ import '../state/app_state.dart';
 import '../widgets/app_sidebar.dart';
 import '../widgets/movie_section.dart';
 import '../widgets/movie_card.dart';
+import '../widgets/movie_filter.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -42,9 +43,17 @@ class _HomePageState extends State<HomePage> {
               _TopBar(controller: search, onSubmit: submit),
               Expanded(
                 child: detail == null
-                    ? _Results(
-                        showAll: selected == 0,
-                        onTap: (movie) => setState(() => detail = movie),
+                    ? Column(
+                        children: [
+                          if (selected >= 3)
+                            MovieFilter(type: _typeForIndex(selected)),
+                          Expanded(
+                            child: _Results(
+                              showAll: selected == 0,
+                              onTap: (movie) => setState(() => detail = movie),
+                            ),
+                          ),
+                        ],
                       )
                     : _Details(
                         movie: detail!,
@@ -79,6 +88,22 @@ class _HomePageState extends State<HomePage> {
     } else {
       state.loadCategory(title, slug);
     }
+  }
+
+  String _typeForIndex(int index) {
+    const types = [
+      '',
+      '',
+      '',
+      'phim-le',
+      'phim-bo',
+      'tv-shows',
+      'hoat-hinh',
+      'phim-vietsub',
+      'phim-thuyet-minh',
+      'phim-long-tieng',
+    ];
+    return types[index];
   }
 }
 

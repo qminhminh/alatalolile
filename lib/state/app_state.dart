@@ -14,11 +14,25 @@ class AppState extends ChangeNotifier {
   String? activeSlug;
   int currentPage = 1;
   final int totalPages = 152;
+  List<Map<String, String>> categories = const [];
+  List<Map<String, String>> countries = const [];
+  String sortField = 'modified.time';
+  String sortType = 'desc';
+  String? language, category, country;
+  int? year;
 
   Future<void> loadLatest() async {
     loading = true;
     error = null;
     notifyListeners();
+    try {
+      final options = await Future.wait([
+        repository.categories(),
+        repository.countries(),
+      ]);
+      categories = options[0];
+      countries = options[1];
+    } catch (_) {}
     try {
       final results = await Future.wait([
         repository.latest(),
@@ -48,6 +62,35 @@ class AppState extends ChangeNotifier {
       loading = false;
       notifyListeners();
     }
+  }
+
+  Future<void> applyFilters({
+    required String type,
+    String? newLanguage,
+    String? newCategory,
+    String? newCountry,
+    int? newYear,
+    String newSortField = 'modified.time',
+    String newSortType = 'desc',
+  }) async {
+    language = newLanguage;
+    category = newCategory;
+    country = newCountry;
+    year = newYear;
+    sortField = newSortField;
+    sortType = newSortType;
+    activeSlug = type;
+    await _load(
+      () => repository.filtered(
+        type: type,
+        language: language,
+        category: category,
+        country: country,
+        year: year,
+        sortField: sortField,
+        sortType: sortType,
+      ),
+    );
   }
 
   Future<void> search(String keyword) =>

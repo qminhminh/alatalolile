@@ -92,14 +92,14 @@ class _Info extends StatelessWidget {
     children: [
       Text(
         movie.name,
-        maxLines: 1,
+        maxLines: 2,
         overflow: TextOverflow.ellipsis,
         style: const TextStyle(fontWeight: FontWeight.w700),
       ),
       const SizedBox(height: 3),
       Text(
         movie.original,
-        maxLines: 1,
+        maxLines: 2,
         overflow: TextOverflow.ellipsis,
         style: const TextStyle(color: Colors.white60, fontSize: 12),
       ),
@@ -111,9 +111,13 @@ class _Info extends StatelessWidget {
             style: const TextStyle(color: Colors.white60, fontSize: 11),
           ),
           const Text('  •  ', style: TextStyle(color: Colors.white38)),
-          Text(
-            movie.time.isEmpty ? movie.episode : movie.time,
-            style: const TextStyle(color: Colors.white60, fontSize: 11),
+          Flexible(
+            child: Text(
+              movie.time.isEmpty ? movie.episode : movie.time,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(color: Colors.white60, fontSize: 11),
+            ),
           ),
           if (movie.rating > 0) ...[
             const Spacer(),
