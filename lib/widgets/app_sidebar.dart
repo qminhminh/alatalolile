@@ -50,12 +50,15 @@ class AppSidebar extends StatelessWidget {
           ),
           ...List.generate(
             items.length,
-            (i) => ListTile(
-              onTap: () => onSelected(i),
-              selected: selected == i,
-              selectedTileColor: const Color(0x33FFC107),
-              leading: Icon(items[i].$1),
-              title: Text(items[i].$2),
+            (i) => Material(
+              color: Colors.transparent,
+              child: ListTile(
+                onTap: () => onSelected(i),
+                selected: selected == i,
+                selectedTileColor: const Color(0x33FFC107),
+                leading: Icon(items[i].$1),
+                title: Text(items[i].$2),
+              ),
             ),
           ),
           const Spacer(),

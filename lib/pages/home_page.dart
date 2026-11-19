@@ -8,6 +8,8 @@ import '../widgets/app_sidebar.dart';
 import '../widgets/movie_section.dart';
 import '../widgets/movie_card.dart';
 import '../widgets/movie_filter.dart';
+import '../data/movie_repository.dart';
+import 'watch_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -57,6 +59,7 @@ class _HomePageState extends State<HomePage> {
                       )
                     : _Details(
                         movie: detail!,
+                        repository: context.read<AppState>().repository,
                         onBack: () => setState(() => detail = null),
                       ),
               ),
@@ -287,51 +290,193 @@ class _Pagination extends StatelessWidget {
 }
 
 class _Details extends StatelessWidget {
-  const _Details({required this.movie, required this.onBack});
+  const _Details({
+    required this.movie,
+    required this.repository,
+    required this.onBack,
+  });
   final Movie movie;
+  final MovieRepository repository;
   final VoidCallback onBack;
   @override
-  Widget build(BuildContext c) => ListView(
-    padding: const EdgeInsets.all(30),
-    children: [
-      TextButton.icon(
-        onPressed: onBack,
-        icon: const Icon(CupertinoIcons.back),
-        label: const Text('Quay lại'),
-      ),
-      Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+  Widget build(BuildContext c) => FutureBuilder<MovieDetail>(
+    future: repository.detail(movie.slug),
+    builder: (context, snapshot) {
+      final detail = snapshot.data;
+      if (snapshot.connectionState == ConnectionState.waiting) {
+        return const Center(child: CircularProgressIndicator());
+      }
+      if (detail == null) {
+        return const Center(child: Text('Không thể tải chi tiết phim'));
+      }
+      return ListView(
+        padding: const EdgeInsets.all(30),
         children: [
-          SizedBox(
-            width: 230,
-            height: 330,
-            child: Image.network(movie.poster, fit: BoxFit.cover),
+          TextButton.icon(
+            onPressed: onBack,
+            icon: const Icon(CupertinoIcons.back),
+            label: const Text('Quay lại'),
           ),
-          const SizedBox(width: 24),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  movie.name,
-                  style: const TextStyle(
-                    fontSize: 30,
-                    fontWeight: FontWeight.bold,
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(
+                width: 230,
+                height: 330,
+                child: Image.network(movie.poster, fit: BoxFit.cover),
+              ),
+              const SizedBox(width: 24),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      movie.name,
+                      style: const TextStyle(
+                        fontSize: 30,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(movie.original),
+                    const SizedBox(height: 22),
+                    Wrap(
+                      spacing: 16,
+                      children: [
+                        OutlinedButton.icon(
+                          onPressed: () {},
+                          icon: const Icon(
+                            CupertinoIcons.heart,
+                            color: Color(0xFFFFC107),
+                          ),
+                          label: const Text('Yêu thích'),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: const Color(0xFFFFC107),
+                            side: const BorderSide(color: Color(0xFFFFC107)),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 22,
+                              vertical: 16,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(28),
+                            ),
+                          ),
+                        ),
+                        FilledButton.icon(
+                          onPressed:
+                              detail.servers.isEmpty ||
+                                  detail.servers.first.episodes.isEmpty
+                              ? null
+                              : () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => WatchPage(
+                                      movie: detail,
+                                      episode:
+                                          detail.servers.first.episodes.first,
+                                    ),
+                                  ),
+                                ),
+                          icon: const Icon(CupertinoIcons.play_circle),
+                          label: const Text('Xem Ngay'),
+                          style: FilledButton.styleFrom(
+                            backgroundColor: const Color(0xFFFF7800),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 24,
+                              vertical: 16,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(28),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 18),
+                    Text(
+                      detail.content,
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        height: 1.45,
+                      ),
+                      maxLines: 5,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 16),
+                    Wrap(
+                      spacing: 18,
+                      runSpacing: 10,
+                      children: [
+                        Text('Năm: ${detail.year}'),
+                        Text('Thời lượng: ${detail.time}'),
+                        Text('Tình trạng: ${detail.episode}'),
+                        Text(
+                          'Chất lượng: ${detail.quality} - ${detail.language}',
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Text('Quốc gia: ${detail.countries.join(', ')}'),
+                    const SizedBox(height: 8),
+                    Text('Thể loại: ${detail.categories.join(', ')}'),
+                    const SizedBox(height: 8),
+                    Text('Đạo diễn: ${detail.directors.join(', ')}'),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Diễn viên: ${detail.actors.join(', ')}',
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 28),
+          const Text(
+            'Danh sách tập',
+            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 12),
+          ...detail.servers.map(
+            (server) => Padding(
+              padding: const EdgeInsets.only(bottom: 18),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    server.name,
+                    style: const TextStyle(
+                      color: Color(0xFFFFC107),
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 12),
-                Text(movie.original),
-                const SizedBox(height: 20),
-                FilledButton.icon(
-                  onPressed: () {},
-                  icon: const Icon(CupertinoIcons.play_arrow_solid),
-                  label: const Text('Phát phim'),
-                ),
-              ],
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: server.episodes
+                        .map(
+                          (episode) => OutlinedButton(
+                            onPressed: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) =>
+                                    WatchPage(movie: detail, episode: episode),
+                              ),
+                            ),
+                            child: Text(episode.name),
+                          ),
+                        )
+                        .toList(),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
-      ),
-    ],
+      );
+    },
   );
 }

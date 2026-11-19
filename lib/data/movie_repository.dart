@@ -67,6 +67,40 @@ class MovieRepository {
       },
     ),
   );
+
+  Future<MovieDetail> detail(String slug) async {
+    final response = await _client.get(Uri.parse('$_baseUrl/phim/$slug'));
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw Exception('Không thể tải chi tiết phim');
+    }
+    final root = jsonDecode(response.body) as Map<String, dynamic>;
+    final item = Map<String, dynamic>.from(root['movie'] as Map);
+    final base = Movie.fromJson(item);
+    final raw = root['episodes'] is List ? root['episodes'] as List : const [];
+    return MovieDetail(
+      slug: base.slug,
+      name: base.name,
+      original: base.original,
+      poster: base.poster,
+      thumb: base.thumb,
+      year: base.year,
+      episode: base.episode,
+      quality: base.quality,
+      time: base.time,
+      rating: base.rating,
+      categories: base.categories,
+      countries: base.countries,
+      directors: base.directors,
+      actors: base.actors,
+      language: base.language,
+      content: base.content,
+      servers: raw
+          .whereType<Map<String, dynamic>>()
+          .map(EpisodeServer.fromJson)
+          .toList(),
+    );
+  }
+
   Future<List<Movie>> _fetch(Uri uri) async {
     final response = await _client.get(uri);
     if (response.statusCode < 200 || response.statusCode >= 300) {
