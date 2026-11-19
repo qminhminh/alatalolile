@@ -11,6 +11,9 @@ class AppState extends ChangeNotifier {
   bool loading = false;
   String? error;
   String activeTitle = 'Phim mới cập nhật';
+  String? activeSlug;
+  int currentPage = 1;
+  final int totalPages = 152;
 
   Future<void> loadLatest() async {
     loading = true;
@@ -52,7 +55,15 @@ class AppState extends ChangeNotifier {
 
   Future<void> loadCategory(String title, String slug) async {
     activeTitle = title;
+    activeSlug = slug;
+    currentPage = 1;
     await _load(() => repository.category(slug));
+  }
+
+  Future<void> goToPage(int page) async {
+    if (activeSlug == null || page < 1 || page > totalPages) return;
+    currentPage = page;
+    await _load(() => repository.category(activeSlug!, page: page));
   }
 
   Future<void> _load(Future<List<Movie>> Function() request) async {

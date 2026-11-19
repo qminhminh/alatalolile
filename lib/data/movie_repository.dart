@@ -9,9 +9,9 @@ class MovieRepository {
   final http.Client _client;
   static const _baseUrl = 'https://phimapi.com';
   Future<List<Movie>> latest() => _fetch(Uri.parse('$_baseUrl/v1/api/home'));
-  Future<List<Movie>> category(String slug) => _fetch(
+  Future<List<Movie>> category(String slug, {int page = 1}) => _fetch(
     Uri.parse('$_baseUrl/v1/api/danh-sach/$slug')
-        .replace(queryParameters: {'limit': '12'}),
+        .replace(queryParameters: {'limit': '24', 'page': '$page'}),
   );
   Future<List<Movie>> search(String keyword) => _fetch(
     Uri.parse('$_baseUrl/v1/api/tim-kiem')

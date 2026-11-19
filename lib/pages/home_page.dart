@@ -155,16 +155,106 @@ class _Results extends StatelessWidget {
               childCount: state.movies.length,
             ),
             gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-              maxCrossAxisExtent: 180,
+              maxCrossAxisExtent: 165,
               mainAxisExtent: 278,
               crossAxisSpacing: 18,
               mainAxisSpacing: 24,
             ),
           ),
         ),
+        if (!showAll && state.activeSlug != null)
+          SliverToBoxAdapter(
+            child: _Pagination(
+              currentPage: state.currentPage,
+              totalPages: state.totalPages,
+              onPageChanged: context.read<AppState>().goToPage,
+            ),
+          ),
       ],
     );
   }
+}
+
+class _Pagination extends StatelessWidget {
+  const _Pagination({
+    required this.currentPage,
+    required this.totalPages,
+    required this.onPageChanged,
+  });
+  final int currentPage;
+  final int totalPages;
+  final ValueChanged<int> onPageChanged;
+  @override
+  Widget build(BuildContext context) {
+    final pages = <int>{
+      1,
+      2,
+      3,
+      currentPage,
+      totalPages,
+    }.where((p) => p >= 1 && p <= totalPages).toList()..sort();
+    final children = <Widget>[
+      _button(
+        '‹  Trước',
+        currentPage > 1,
+        () => onPageChanged(currentPage - 1),
+      ),
+    ];
+    for (var i = 0; i < pages.length; i++) {
+      if (i > 0 && pages[i] - pages[i - 1] > 1) {
+        children.add(
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 8),
+            child: Text('…'),
+          ),
+        );
+      }
+      final page = pages[i];
+      children.add(
+        _button(
+          '$page',
+          true,
+          () => onPageChanged(page),
+          active: page == currentPage,
+        ),
+      );
+    }
+    children.add(
+      _button(
+        'Tiếp  ›',
+        currentPage < totalPages,
+        () => onPageChanged(currentPage + 1),
+      ),
+    );
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 28),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: children,
+      ),
+    );
+  }
+
+  Widget _button(
+    String label,
+    bool enabled,
+    VoidCallback onPressed, {
+    bool active = false,
+  }) => Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 4),
+    child: ElevatedButton(
+      onPressed: enabled ? onPressed : null,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: active
+            ? const Color(0xFFFFC107)
+            : const Color(0xFF242426),
+        foregroundColor: active ? Colors.black : Colors.white70,
+        elevation: 0,
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+      ),
+      child: Text(label),
+    ),
+  );
 }
 
 class _Details extends StatelessWidget {
