@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class AppSidebar extends StatelessWidget {
@@ -11,16 +12,16 @@ class AppSidebar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const items = <(IconData, String)>[
-      (Icons.home_rounded, 'Trang chủ'),
-      (Icons.search_rounded, 'Tìm kiếm'),
-      (Icons.new_releases_rounded, 'Phim mới'),
-      (Icons.movie_filter_rounded, 'Phim lẻ'),
-      (Icons.live_tv_rounded, 'Phim bộ'),
-      (Icons.tv_rounded, 'TV Shows'),
-      (Icons.animation_rounded, 'Hoạt hình'),
-      (Icons.translate_rounded, 'Việt sub'),
-      (Icons.record_voice_over_rounded, 'Thuyết minh'),
-      (Icons.mic_rounded, 'Lồng tiếng'),
+      (CupertinoIcons.house_fill, 'Trang chủ'),
+      (CupertinoIcons.search, 'Tìm kiếm'),
+      (CupertinoIcons.star_fill, 'Phim mới'),
+      (CupertinoIcons.film, 'Phim lẻ'),
+      (CupertinoIcons.tv, 'Phim bộ'),
+      (CupertinoIcons.tv_fill, 'TV Shows'),
+      (CupertinoIcons.circle_grid_hex, 'Hoạt hình'),
+      (CupertinoIcons.textformat_abc, 'Việt sub'),
+      (CupertinoIcons.person_2_fill, 'Thuyết minh'),
+      (CupertinoIcons.mic_fill, 'Lồng tiếng'),
     ];
     return Container(
       width: 220,
@@ -60,7 +61,7 @@ class AppSidebar extends StatelessWidget {
           const Spacer(),
           const Divider(color: Colors.white12),
           const ListTile(
-            leading: Icon(Icons.settings_outlined),
+            leading: Icon(CupertinoIcons.gear),
             title: Text('Cài đặt'),
           ),
         ],

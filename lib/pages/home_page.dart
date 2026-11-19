@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -93,7 +94,7 @@ class _TopBar extends StatelessWidget {
       onSubmitted: (_) => onSubmit(),
       decoration: const InputDecoration(
         hintText: 'Tìm kiếm phim...',
-        prefixIcon: Icon(Icons.search),
+        prefixIcon: Icon(CupertinoIcons.search),
       ),
     ),
   );
@@ -186,13 +187,16 @@ class _Pagination extends StatelessWidget {
   final ValueChanged<int> onPageChanged;
   @override
   Widget build(BuildContext context) {
-    final pages = <int>{
-      1,
-      2,
-      3,
-      currentPage,
-      totalPages,
-    }.where((p) => p >= 1 && p <= totalPages).toList()..sort();
+    final pages = <int>{1, 2, totalPages - 1, totalPages};
+    if (currentPage <= 3) {
+      pages.add(3);
+    } else if (currentPage >= totalPages - 2) {
+      pages.add(totalPages - 2);
+    } else {
+      pages.addAll([currentPage - 1, currentPage, currentPage + 1]);
+    }
+    final orderedPages = pages.where((p) => p >= 1 && p <= totalPages).toList()
+      ..sort();
     final children = <Widget>[
       _button(
         '‹  Trước',
@@ -200,8 +204,8 @@ class _Pagination extends StatelessWidget {
         () => onPageChanged(currentPage - 1),
       ),
     ];
-    for (var i = 0; i < pages.length; i++) {
-      if (i > 0 && pages[i] - pages[i - 1] > 1) {
+    for (var i = 0; i < orderedPages.length; i++) {
+      if (i > 0 && orderedPages[i] - orderedPages[i - 1] > 1) {
         children.add(
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 8),
@@ -209,7 +213,7 @@ class _Pagination extends StatelessWidget {
           ),
         );
       }
-      final page = pages[i];
+      final page = orderedPages[i];
       children.add(
         _button(
           '$page',
@@ -267,7 +271,7 @@ class _Details extends StatelessWidget {
     children: [
       TextButton.icon(
         onPressed: onBack,
-        icon: const Icon(Icons.arrow_back),
+        icon: const Icon(CupertinoIcons.back),
         label: const Text('Quay lại'),
       ),
       Row(
@@ -295,7 +299,7 @@ class _Details extends StatelessWidget {
                 const SizedBox(height: 20),
                 FilledButton.icon(
                   onPressed: () {},
-                  icon: const Icon(Icons.play_arrow),
+                  icon: const Icon(CupertinoIcons.play_arrow_solid),
                   label: const Text('Phát phim'),
                 ),
               ],
