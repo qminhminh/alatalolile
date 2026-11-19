@@ -8,6 +8,7 @@ import '../widgets/app_sidebar.dart';
 import '../widgets/movie_section.dart';
 import '../widgets/movie_card.dart';
 import '../widgets/movie_filter.dart';
+import '../widgets/skeleton.dart';
 import '../data/movie_repository.dart';
 import 'watch_page.dart';
 
@@ -241,7 +242,7 @@ class _Results extends StatelessWidget {
   Widget build(BuildContext context) {
     final state = context.watch<AppState>();
     if (state.loading) {
-      return const Center(child: CircularProgressIndicator());
+      return const MovieSkeletonGrid();
     }
     if (state.error != null) {
       return Center(child: Text(state.error!));
