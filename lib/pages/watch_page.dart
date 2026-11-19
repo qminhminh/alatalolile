@@ -28,6 +28,7 @@ class _WatchPageState extends State<WatchPage> {
   bool showEpisodes = false;
   bool loadingEpisode = false;
   bool controlsVisible = true;
+  bool controlsLocked = false;
   Timer? controlsTimer;
   @override
   void initState() {
@@ -106,7 +107,7 @@ class _WatchPageState extends State<WatchPage> {
                   Positioned.fill(
                     child: GestureDetector(
                       behavior: HitTestBehavior.translucent,
-                      onTap: _showControls,
+                      onTap: controlsLocked ? null : _showControls,
                     ),
                   ),
                 if (controller.value.isInitialized && controlsVisible)
@@ -125,7 +126,26 @@ class _WatchPageState extends State<WatchPage> {
                       ),
                     ),
                   ),
-                if (controller.value.isInitialized)
+                if (controller.value.isInitialized && controlsVisible)
+                  Positioned(
+                    top: 8,
+                    left: 8,
+                    child: CupertinoButton(
+                      padding: const EdgeInsets.all(10),
+                      color: Colors.black54,
+                      borderRadius: BorderRadius.circular(22),
+                      onPressed: () => setState(() {
+                        controlsLocked = !controlsLocked;
+                        if (controlsLocked) controlsVisible = false;
+                      }),
+                      child: const Icon(
+                        CupertinoIcons.lock,
+                        color: Colors.white,
+                        size: 20,
+                      ),
+                    ),
+                  ),
+                if (controller.value.isInitialized && controlsVisible)
                   Positioned(
                     top: 8,
                     right: 8,
@@ -144,7 +164,7 @@ class _WatchPageState extends State<WatchPage> {
                       ),
                     ),
                   ),
-                if (controller.value.isInitialized)
+                if (controller.value.isInitialized && controlsVisible)
                   Center(
                     child: GestureDetector(
                       onTap: _togglePlayback,
@@ -161,7 +181,7 @@ class _WatchPageState extends State<WatchPage> {
                       ),
                     ),
                   ),
-                if (controller.value.isInitialized)
+                if (controller.value.isInitialized && controlsVisible)
                   Positioned(
                     left: 0,
                     right: 0,
@@ -274,10 +294,11 @@ class _WatchPageState extends State<WatchPage> {
   );
 
   void _showControls() {
+    if (controlsLocked) return;
     controlsTimer?.cancel();
     if (mounted) setState(() => controlsVisible = true);
     controlsTimer = Timer(const Duration(seconds: 5), () {
-      if (mounted && controller.value.isPlaying) {
+      if (mounted) {
         setState(() => controlsVisible = false);
       }
     });
@@ -290,6 +311,13 @@ class _WatchPageState extends State<WatchPage> {
     final key = event.logicalKey;
     if (key == LogicalKeyboardKey.space) {
       _togglePlayback();
+      return KeyEventResult.handled;
+    }
+    if (key == LogicalKeyboardKey.keyL) {
+      setState(() {
+        controlsLocked = !controlsLocked;
+        controlsVisible = !controlsLocked;
+      });
       return KeyEventResult.handled;
     }
     if (key == LogicalKeyboardKey.arrowLeft) {
