@@ -14,20 +14,26 @@ class WatchPage extends StatefulWidget {
 
 class _WatchPageState extends State<WatchPage> {
   late final VideoPlayerController controller;
+  double volume = 1;
   @override
   void initState() {
     super.initState();
-    controller = VideoPlayerController.networkUrl(
-      Uri.parse(
-        widget.episode.m3u8.isNotEmpty
-            ? widget.episode.m3u8
-            : widget.episode.embed,
-      ),
-    )..initialize().then((_) => setState(() {}));
+    controller =
+        VideoPlayerController.networkUrl(
+            Uri.parse(
+              widget.episode.m3u8.isNotEmpty
+                  ? widget.episode.m3u8
+                  : widget.episode.embed,
+            ),
+          )
+          ..initialize().then((_) {
+            if (mounted) setState(() {});
+          });
   }
 
   @override
   void dispose() {
+    controller.pause();
     controller.dispose();
     super.dispose();
   }
@@ -63,11 +69,30 @@ class _WatchPageState extends State<WatchPage> {
               icon: const Icon(CupertinoIcons.gobackward_10),
             ),
             IconButton(
-              onPressed: () => setState(
-                () => controller.value.isPlaying
-                    ? controller.pause()
-                    : controller.play(),
+              onPressed: () async {
+                volume = volume > 0 ? 0 : 1;
+                await controller.setVolume(volume);
+                if (mounted) setState(() {});
+              },
+              icon: Icon(
+                volume == 0
+                    ? CupertinoIcons.volume_off
+                    : CupertinoIcons.volume_up,
               ),
+            ),
+            SizedBox(
+              width: 120,
+              child: Slider(
+                value: volume,
+                onChanged: (value) async {
+                  setState(() => volume = value);
+                  await controller.setVolume(value);
+                },
+                activeColor: const Color(0xFFFFC107),
+              ),
+            ),
+            IconButton(
+              onPressed: _togglePlayback,
               icon: Icon(
                 controller.value.isPlaying
                     ? CupertinoIcons.pause_fill
@@ -85,4 +110,13 @@ class _WatchPageState extends State<WatchPage> {
       ],
     ),
   );
+
+  Future<void> _togglePlayback() async {
+    if (controller.value.isPlaying) {
+      await controller.pause();
+    } else {
+      await controller.play();
+    }
+    if (mounted) setState(() {});
+  }
 }

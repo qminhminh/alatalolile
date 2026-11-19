@@ -503,23 +503,30 @@ class _Details extends StatelessWidget {
                     Wrap(
                       spacing: 16,
                       children: [
-                        OutlinedButton.icon(
-                          onPressed: () =>
-                              context.read<AppState>().toggleFavorite(movie),
-                          icon: const Icon(
-                            CupertinoIcons.heart,
-                            color: Color(0xFFFFC107),
-                          ),
-                          label: const Text('Yêu thích'),
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: const Color(0xFFFFC107),
-                            side: const BorderSide(color: Color(0xFFFFC107)),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 22,
-                              vertical: 16,
+                        Consumer<AppState>(
+                          builder: (context, state, _) => OutlinedButton.icon(
+                            onPressed: () => state.toggleFavorite(movie),
+                            icon: Icon(
+                              state.isFavorite(movie.slug)
+                                  ? CupertinoIcons.heart_fill
+                                  : CupertinoIcons.heart,
+                              color: const Color(0xFFFFC107),
                             ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(28),
+                            label: Text(
+                              state.isFavorite(movie.slug)
+                                  ? 'Đã yêu thích'
+                                  : 'Yêu thích',
+                            ),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: const Color(0xFFFFC107),
+                              side: const BorderSide(color: Color(0xFFFFC107)),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 22,
+                                vertical: 16,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(28),
+                              ),
                             ),
                           ),
                         ),
