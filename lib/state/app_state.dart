@@ -81,15 +81,17 @@ class AppState extends ChangeNotifier {
     sortType = newSortType;
     activeSlug = type;
     await _load(
-      () => repository.filtered(
-        type: type,
-        language: language,
-        category: category,
-        country: country,
-        year: year,
-        sortField: sortField,
-        sortType: sortType,
-      ),
+      () => type == 'phim-moi-cap-nhat-v3'
+          ? repository.latest()
+          : repository.filtered(
+              type: type,
+              language: language,
+              category: category,
+              country: country,
+              year: year,
+              sortField: sortField,
+              sortType: sortType,
+            ),
     );
   }
 

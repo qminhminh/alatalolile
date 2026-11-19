@@ -129,7 +129,7 @@ class _HomePageState extends State<HomePage> {
     const types = [
       '',
       '',
-      '',
+      'phim-moi-cap-nhat-v3',
       'phim-le',
       'phim-bo',
       'tv-shows',
