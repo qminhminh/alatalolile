@@ -182,7 +182,7 @@ class _Results extends StatelessWidget {
             ),
             gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
               maxCrossAxisExtent: 165,
-              mainAxisExtent: 278,
+              mainAxisExtent: 410,
               crossAxisSpacing: 18,
               mainAxisSpacing: 24,
             ),

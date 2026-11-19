@@ -10,7 +10,8 @@ class MovieCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 155,
+      width: 180,
+      height: 410,
       child: InkWell(
         onTap: onTap,
         child: DecoratedBox(
@@ -21,7 +22,7 @@ class MovieCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(child: _Poster(movie: movie)),
+              SizedBox(height: 230, child: _Poster(movie: movie)),
               Padding(
                 padding: const EdgeInsets.fromLTRB(10, 9, 10, 10),
                 child: _Info(movie: movie),
