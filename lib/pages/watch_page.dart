@@ -5,9 +5,15 @@ import 'package:video_player/video_player.dart';
 import '../models/movie.dart';
 
 class WatchPage extends StatefulWidget {
-  const WatchPage({required this.movie, required this.episode, super.key});
+  const WatchPage({
+    required this.movie,
+    required this.episode,
+    this.servers = const [],
+    super.key,
+  });
   final Movie movie;
   final Episode episode;
+  final List<EpisodeServer> servers;
   @override
   State<WatchPage> createState() => _WatchPageState();
 }
@@ -15,6 +21,7 @@ class WatchPage extends StatefulWidget {
 class _WatchPageState extends State<WatchPage> {
   late final VideoPlayerController controller;
   double volume = 1;
+  bool showEpisodes = false;
   @override
   void initState() {
     super.initState();
@@ -68,6 +75,25 @@ class _WatchPageState extends State<WatchPage> {
                         fontWeight: FontWeight.w700,
                         shadows: [Shadow(blurRadius: 6, color: Colors.black)],
                       ),
+                    ),
+                  ),
+                ),
+              if (controller.value.isInitialized)
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: CupertinoButton(
+                    padding: const EdgeInsets.all(10),
+                    color: Colors.black54,
+                    borderRadius: BorderRadius.circular(22),
+                    onPressed: () =>
+                        setState(() => showEpisodes = !showEpisodes),
+                    child: Icon(
+                      showEpisodes
+                          ? CupertinoIcons.xmark
+                          : CupertinoIcons.list_bullet,
+                      color: Colors.white,
+                      size: 20,
                     ),
                   ),
                 ),
@@ -179,6 +205,7 @@ class _WatchPageState extends State<WatchPage> {
                     ),
                   ),
                 ),
+              if (showEpisodes) _EpisodePanel(widget: widget),
             ],
           ),
         ),
@@ -194,4 +221,66 @@ class _WatchPageState extends State<WatchPage> {
     }
     if (mounted) setState(() {});
   }
+}
+
+class _EpisodePanel extends StatelessWidget {
+  const _EpisodePanel({required this.widget});
+  final WatchPage widget;
+
+  @override
+  Widget build(BuildContext context) => Positioned(
+    top: 0,
+    right: 0,
+    bottom: 0,
+    width: 300,
+    child: Container(
+      color: const Color(0xF21A1A1A),
+      padding: const EdgeInsets.fromLTRB(16, 54, 10, 12),
+      child: ListView(
+        children: [
+          const Text(
+            'Danh sách tập',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 12),
+          ...widget.servers.expand(
+            (server) => <Widget>[
+              Text(
+                server.name,
+                style: const TextStyle(color: Color(0xFFFFC107)),
+              ),
+              const SizedBox(height: 6),
+              ...server.episodes.map(
+                (episode) => CupertinoButton(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 8,
+                  ),
+                  alignment: Alignment.centerLeft,
+                  color: episode.slug == widget.episode.slug
+                      ? const Color(0x55FFC107)
+                      : Colors.transparent,
+                  onPressed: () => Navigator.pushReplacement(
+                    context,
+                    CupertinoPageRoute(
+                      builder: (_) => WatchPage(
+                        movie: widget.movie,
+                        episode: episode,
+                        servers: widget.servers,
+                      ),
+                    ),
+                  ),
+                  child: Text(
+                    episode.name,
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+            ],
+          ),
+        ],
+      ),
+    ),
+  );
 }

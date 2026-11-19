@@ -542,6 +542,7 @@ class _Details extends StatelessWidget {
                                       movie: detail,
                                       episode:
                                           detail.servers.first.episodes.first,
+                                      servers: detail.servers,
                                     ),
                                   ),
                                 ),
@@ -630,8 +631,11 @@ class _Details extends StatelessWidget {
                             onPressed: () => Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (_) =>
-                                    WatchPage(movie: detail, episode: episode),
+                                builder: (_) => WatchPage(
+                                  movie: detail,
+                                  episode: episode,
+                                  servers: detail.servers,
+                                ),
                               ),
                             ),
                             child: Text(episode.name),
