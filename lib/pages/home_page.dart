@@ -42,7 +42,7 @@ class _HomePageState extends State<HomePage> {
         Expanded(
           child: Column(
             children: [
-              _TopBar(controller: search, onSubmit: submit),
+              if (detail == null) _TopBar(controller: search, onSubmit: submit),
               Expanded(
                 child: detail == null
                     ? Column(
@@ -71,7 +71,10 @@ class _HomePageState extends State<HomePage> {
   );
 
   void _selectSection(int index) {
-    setState(() => selected = index);
+    setState(() {
+      selected = index;
+      detail = null;
+    });
     const sections = <(String, String)>[
       ('Trang chủ', ''),
       ('Tìm kiếm', ''),
@@ -312,10 +315,26 @@ class _Details extends StatelessWidget {
       return ListView(
         padding: const EdgeInsets.all(30),
         children: [
-          TextButton.icon(
-            onPressed: onBack,
-            icon: const Icon(CupertinoIcons.back),
-            label: const Text('Quay lại'),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton.icon(
+              onPressed: onBack,
+              icon: const Icon(CupertinoIcons.chevron_left, size: 24),
+              label: const Text(
+                'Quay lại',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+              ),
+              style: TextButton.styleFrom(
+                foregroundColor: const Color(0xFFFFC107),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 14,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(18),
+                ),
+              ),
+            ),
           ),
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -474,6 +493,49 @@ class _Details extends StatelessWidget {
                 ],
               ),
             ),
+          ),
+          const SizedBox(height: 24),
+          FutureBuilder<List<Movie>>(
+            future: repository.latest(),
+            builder: (context, similarSnapshot) {
+              final similar = similarSnapshot.data ?? const <Movie>[];
+              if (similar.isEmpty) return const SizedBox.shrink();
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Phim đề xuất cho bạn',
+                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 16),
+                  GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: similar.length,
+                    gridDelegate:
+                        const SliverGridDelegateWithMaxCrossAxisExtent(
+                          maxCrossAxisExtent: 190,
+                          mainAxisExtent: 410,
+                          crossAxisSpacing: 18,
+                          mainAxisSpacing: 24,
+                        ),
+                    itemBuilder: (_, index) => MovieCard(
+                      movie: similar[index],
+                      onTap: () => Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => _Details(
+                            movie: similar[index],
+                            repository: repository,
+                            onBack: onBack,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
           ),
         ],
       );
