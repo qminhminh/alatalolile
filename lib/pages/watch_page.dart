@@ -20,23 +20,43 @@ class WatchPage extends StatefulWidget {
 }
 
 class _WatchPageState extends State<WatchPage> {
-  late final VideoPlayerController controller;
+  late VideoPlayerController controller;
+  late Episode currentEpisode;
   double volume = 1;
   bool showEpisodes = false;
+  bool loadingEpisode = false;
   @override
   void initState() {
     super.initState();
-    controller =
-        VideoPlayerController.networkUrl(
-            Uri.parse(
-              widget.episode.m3u8.isNotEmpty
-                  ? widget.episode.m3u8
-                  : widget.episode.embed,
-            ),
-          )
-          ..initialize().then((_) {
-            if (mounted) setState(() {});
-          });
+    currentEpisode = widget.episode;
+    controller = _createController(widget.episode);
+    controller.initialize().then((_) {
+      if (mounted) setState(() {});
+    });
+  }
+
+  VideoPlayerController _createController(Episode episode) =>
+      VideoPlayerController.networkUrl(
+        Uri.parse(episode.m3u8.isNotEmpty ? episode.m3u8 : episode.embed),
+      );
+
+  Future<void> _loadEpisode(Episode episode) async {
+    final next = _createController(episode);
+    await controller.pause();
+    await controller.dispose();
+    controller = next;
+    currentEpisode = episode;
+    loadingEpisode = true;
+    if (mounted) setState(() {});
+    try {
+      await controller.initialize();
+      if (mounted) {
+        await controller.play();
+        setState(() => loadingEpisode = false);
+      }
+    } catch (_) {
+      if (mounted) setState(() => loadingEpisode = false);
+    }
   }
 
   @override
@@ -49,7 +69,7 @@ class _WatchPageState extends State<WatchPage> {
   @override
   Widget build(BuildContext context) => Scaffold(
     appBar: AppBar(
-      title: Text('${widget.movie.name} - ${widget.episode.name}'),
+      title: Text('${widget.movie.name} - ${currentEpisode.name}'),
     ),
     body: Focus(
       autofocus: true,
@@ -60,7 +80,9 @@ class _WatchPageState extends State<WatchPage> {
             child: Stack(
               fit: StackFit.expand,
               children: [
-                if (controller.value.isInitialized)
+                if (loadingEpisode)
+                  const Center(child: CupertinoActivityIndicator(radius: 16))
+                else if (controller.value.isInitialized)
                   FittedBox(
                     fit: BoxFit.contain,
                     child: SizedBox(
@@ -78,7 +100,7 @@ class _WatchPageState extends State<WatchPage> {
                     right: 0,
                     child: Center(
                       child: Text(
-                        '${widget.movie.name} (${widget.movie.year}) • ${widget.episode.name}',
+                        '${widget.movie.name} (${widget.movie.year}) • ${currentEpisode.name}',
                         style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w700,
@@ -217,7 +239,16 @@ class _WatchPageState extends State<WatchPage> {
                       ),
                     ),
                   ),
-                if (showEpisodes) _EpisodePanel(widget: widget),
+                if (showEpisodes)
+                  _EpisodePanel(
+                    widget: widget,
+                    selectedEpisode: currentEpisode,
+                    onClose: () => setState(() => showEpisodes = false),
+                    onSelect: (episode) async {
+                      setState(() => showEpisodes = false);
+                      await _loadEpisode(episode);
+                    },
+                  ),
               ],
             ),
           ),
@@ -284,8 +315,16 @@ class _WatchPageState extends State<WatchPage> {
 }
 
 class _EpisodePanel extends StatelessWidget {
-  const _EpisodePanel({required this.widget});
+  const _EpisodePanel({
+    required this.widget,
+    required this.selectedEpisode,
+    required this.onClose,
+    required this.onSelect,
+  });
   final WatchPage widget;
+  final Episode selectedEpisode;
+  final VoidCallback onClose;
+  final ValueChanged<Episode> onSelect;
 
   @override
   Widget build(BuildContext context) => Positioned(
@@ -296,48 +335,65 @@ class _EpisodePanel extends StatelessWidget {
     child: Container(
       color: const Color(0xF21A1A1A),
       padding: const EdgeInsets.fromLTRB(16, 54, 10, 12),
-      child: ListView(
+      child: Stack(
         children: [
-          const Text(
-            'Danh sách tập',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 12),
-          ...widget.servers.expand(
-            (server) => <Widget>[
-              Text(
-                server.name,
-                style: const TextStyle(color: Color(0xFFFFC107)),
+          ListView(
+            children: [
+              const Text(
+                'Danh sách tập',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
-              const SizedBox(height: 6),
-              ...server.episodes.map(
-                (episode) => CupertinoButton(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 8,
+              const SizedBox(height: 12),
+              ...widget.servers.expand(
+                (server) => <Widget>[
+                  Text(
+                    server.name,
+                    style: const TextStyle(color: Color(0xFFFFC107)),
                   ),
-                  alignment: Alignment.centerLeft,
-                  color: episode.slug == widget.episode.slug
-                      ? const Color(0x55FFC107)
-                      : Colors.transparent,
-                  onPressed: () => Navigator.pushReplacement(
-                    context,
-                    CupertinoPageRoute(
-                      builder: (_) => WatchPage(
-                        movie: widget.movie,
-                        episode: episode,
-                        servers: widget.servers,
+                  const SizedBox(height: 6),
+                  ...server.episodes.map(
+                    (episode) => CupertinoButton(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 8,
+                      ),
+                      alignment: Alignment.centerLeft,
+                      color: episode.slug == selectedEpisode.slug
+                          ? const Color(0x55FFC107)
+                          : Colors.transparent,
+                      onPressed: () => onSelect(episode),
+                      child: Text(
+                        episode.name,
+                        style: const TextStyle(color: Colors.white),
                       ),
                     ),
                   ),
-                  child: Text(
-                    episode.name,
-                    style: const TextStyle(color: Colors.white),
-                  ),
+                  const SizedBox(height: 10),
+                ],
+              ),
+            ],
+          ),
+          Positioned(
+            top: -4,
+            right: -4,
+            child: GestureDetector(
+              onTap: onClose,
+              behavior: HitTestBehavior.opaque,
+              child: Container(
+                width: 46,
+                height: 46,
+                alignment: Alignment.center,
+                decoration: const BoxDecoration(
+                  color: Color(0x661A1A1A),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  CupertinoIcons.xmark,
+                  color: Colors.white,
+                  size: 22,
                 ),
               ),
-              const SizedBox(height: 10),
-            ],
+            ),
           ),
         ],
       ),
