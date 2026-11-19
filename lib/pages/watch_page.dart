@@ -243,11 +243,13 @@ class _WatchPageState extends State<WatchPage> {
       _seekBy(const Duration(seconds: 10));
       return KeyEventResult.handled;
     }
-    if (key == LogicalKeyboardKey.arrowUp) {
+    if (key == LogicalKeyboardKey.arrowUp ||
+        key == LogicalKeyboardKey.audioVolumeUp) {
       _setVolume((volume + .1).clamp(0.0, 1.0));
       return KeyEventResult.handled;
     }
-    if (key == LogicalKeyboardKey.arrowDown) {
+    if (key == LogicalKeyboardKey.arrowDown ||
+        key == LogicalKeyboardKey.audioVolumeDown) {
       _setVolume((volume - .1).clamp(0.0, 1.0));
       return KeyEventResult.handled;
     }
