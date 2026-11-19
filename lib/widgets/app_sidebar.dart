@@ -13,7 +13,6 @@ class AppSidebar extends StatelessWidget {
   Widget build(BuildContext context) {
     const items = <(IconData, String)>[
       (CupertinoIcons.house_fill, 'Trang chủ'),
-      (CupertinoIcons.search, 'Tìm kiếm'),
       (CupertinoIcons.star_fill, 'Phim mới'),
       (CupertinoIcons.film, 'Phim lẻ'),
       (CupertinoIcons.tv, 'Phim bộ'),

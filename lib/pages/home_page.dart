@@ -76,7 +76,7 @@ class _HomePageState extends State<HomePage> {
                 child: detail == null
                     ? Column(
                         children: [
-                          if (selected >= 2)
+                          if (selected >= 1)
                             MovieFilter(type: _typeForIndex(selected)),
                           Expanded(
                             child: _Results(
@@ -106,8 +106,7 @@ class _HomePageState extends State<HomePage> {
     });
     const sections = <(String, String)>[
       ('Trang chủ', ''),
-      ('Tìm kiếm', ''),
-      ('Phim mới', ''),
+      ('Phim mới', 'phim-moi-cap-nhat-v3'),
       ('Phim lẻ', 'phim-le'),
       ('Phim bộ', 'phim-bo'),
       ('TV Shows', 'tv-shows'),
@@ -120,6 +119,8 @@ class _HomePageState extends State<HomePage> {
     final state = context.read<AppState>();
     if (slug.isEmpty) {
       state.loadLatest();
+    } else if (slug == 'phim-moi-cap-nhat-v3') {
+      state.applyFilters(type: slug);
     } else {
       state.loadCategory(title, slug);
     }
@@ -127,7 +128,6 @@ class _HomePageState extends State<HomePage> {
 
   String _typeForIndex(int index) {
     const types = [
-      '',
       '',
       'phim-moi-cap-nhat-v3',
       'phim-le',
