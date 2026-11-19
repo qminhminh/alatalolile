@@ -5,6 +5,7 @@ import '../models/movie.dart';
 import '../state/app_state.dart';
 import '../widgets/app_sidebar.dart';
 import '../widgets/movie_section.dart';
+import '../widgets/movie_card.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -33,17 +34,17 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) => Scaffold(
     body: Row(
       children: [
-        AppSidebar(
-          selected: selected,
-          onSelected: (i) => setState(() => selected = i),
-        ),
+        AppSidebar(selected: selected, onSelected: _selectSection),
         Expanded(
           child: Column(
             children: [
               _TopBar(controller: search, onSubmit: submit),
               Expanded(
                 child: detail == null
-                    ? _Results(onTap: (movie) => setState(() => detail = movie))
+                    ? _Results(
+                        showAll: selected == 0,
+                        onTap: (movie) => setState(() => detail = movie),
+                      )
                     : _Details(
                         movie: detail!,
                         onBack: () => setState(() => detail = null),
@@ -55,6 +56,28 @@ class _HomePageState extends State<HomePage> {
       ],
     ),
   );
+
+  void _selectSection(int index) {
+    setState(() => selected = index);
+    const sections = <(String, String)>[
+      ('Phim mới cập nhật', ''),
+      ('Tìm kiếm', ''),
+      ('Phim lẻ', 'phim-le'),
+      ('Phim bộ', 'phim-bo'),
+      ('TV Shows', 'tv-shows'),
+      ('Hoạt hình', 'hoat-hinh'),
+      ('Việt sub', 'phim-vietsub'),
+      ('Thuyết minh', 'phim-thuyet-minh'),
+      ('Lồng tiếng', 'phim-long-tieng'),
+    ];
+    final (title, slug) = sections[index];
+    final state = context.read<AppState>();
+    if (slug.isEmpty) {
+      state.loadLatest();
+    } else {
+      state.loadCategory(title, slug);
+    }
+  }
 }
 
 class _TopBar extends StatelessWidget {
@@ -76,7 +99,8 @@ class _TopBar extends StatelessWidget {
 }
 
 class _Results extends StatelessWidget {
-  const _Results({required this.onTap});
+  const _Results({required this.showAll, required this.onTap});
+  final bool showAll;
   final ValueChanged<Movie> onTap;
   @override
   Widget build(BuildContext context) {
@@ -90,13 +114,52 @@ class _Results extends StatelessWidget {
     if (state.movies.isEmpty) {
       return const Center(child: Text('Không tìm thấy phim'));
     }
-    return ListView(
-      padding: const EdgeInsets.all(30),
-      children: [
-        MovieSection(
-          title: 'Phim mới cập nhật',
-          movies: state.movies,
-          onMovieTap: onTap,
+    if (showAll) {
+      return ListView(
+        padding: const EdgeInsets.all(30),
+        children: state.sections.entries
+            .where((entry) => entry.value.isNotEmpty)
+            .map(
+              (entry) => Padding(
+                padding: const EdgeInsets.only(bottom: 32),
+                child: MovieSection(
+                  title: entry.key,
+                  movies: entry.value,
+                  onMovieTap: onTap,
+                ),
+              ),
+            )
+            .toList(),
+      );
+    }
+    return CustomScrollView(
+      slivers: [
+        SliverPadding(
+          padding: const EdgeInsets.fromLTRB(30, 30, 30, 14),
+          sliver: SliverToBoxAdapter(
+            child: Text(
+              state.activeTitle,
+              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w700),
+            ),
+          ),
+        ),
+        SliverPadding(
+          padding: const EdgeInsets.fromLTRB(30, 0, 30, 36),
+          sliver: SliverGrid(
+            delegate: SliverChildBuilderDelegate(
+              (_, index) => MovieCard(
+                movie: state.movies[index],
+                onTap: () => onTap(state.movies[index]),
+              ),
+              childCount: state.movies.length,
+            ),
+            gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+              maxCrossAxisExtent: 180,
+              mainAxisExtent: 278,
+              crossAxisSpacing: 18,
+              mainAxisSpacing: 24,
+            ),
+          ),
         ),
       ],
     );

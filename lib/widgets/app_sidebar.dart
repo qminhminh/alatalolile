@@ -13,9 +13,14 @@ class AppSidebar extends StatelessWidget {
     const items = <(IconData, String)>[
       (Icons.home_rounded, 'Trang chủ'),
       (Icons.search_rounded, 'Tìm kiếm'),
+      (Icons.new_releases_rounded, 'Phim mới'),
       (Icons.movie_filter_rounded, 'Phim lẻ'),
       (Icons.live_tv_rounded, 'Phim bộ'),
-      (Icons.favorite_border_rounded, 'Yêu thích'),
+      (Icons.tv_rounded, 'TV Shows'),
+      (Icons.animation_rounded, 'Hoạt hình'),
+      (Icons.translate_rounded, 'Việt sub'),
+      (Icons.record_voice_over_rounded, 'Thuyết minh'),
+      (Icons.mic_rounded, 'Lồng tiếng'),
     ];
     return Container(
       width: 220,
