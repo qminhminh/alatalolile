@@ -52,16 +52,21 @@ class _WatchPageState extends State<WatchPage> {
     ),
     body: Column(
       children: [
-        AspectRatio(
-          aspectRatio: controller.value.isInitialized
-              ? controller.value.aspectRatio
-              : 16 / 9,
+        Expanded(
           child: Stack(
             fit: StackFit.expand,
             children: [
-              controller.value.isInitialized
-                  ? VideoPlayer(controller)
-                  : const Center(child: CircularProgressIndicator()),
+              if (controller.value.isInitialized)
+                FittedBox(
+                  fit: BoxFit.contain,
+                  child: SizedBox(
+                    width: controller.value.size.width,
+                    height: controller.value.size.height,
+                    child: VideoPlayer(controller),
+                  ),
+                )
+              else
+                const Center(child: CircularProgressIndicator()),
               if (controller.value.isInitialized)
                 Positioned(
                   top: 14,
