@@ -20,6 +20,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final search = TextEditingController();
   Movie? detail;
+  List<Movie> suggestions = const [];
   int selected = 0;
   @override
   void dispose() {
@@ -31,7 +32,21 @@ class _HomePageState extends State<HomePage> {
     final value = search.text.trim();
     setState(() => selected = value.isEmpty ? 0 : 1);
     final state = context.read<AppState>();
+    setState(() => suggestions = const []);
     value.isEmpty ? state.loadLatest() : state.search(value);
+  }
+
+  Future<void> updateSuggestions(String value) async {
+    if (value.trim().length < 2) {
+      setState(() => suggestions = const []);
+      return;
+    }
+    final results = await context.read<AppState>().repository.search(
+      value.trim(),
+    );
+    if (mounted && search.text.trim() == value.trim()) {
+      setState(() => suggestions = results.take(6).toList());
+    }
   }
 
   @override
@@ -42,7 +57,21 @@ class _HomePageState extends State<HomePage> {
         Expanded(
           child: Column(
             children: [
-              if (detail == null) _TopBar(controller: search, onSubmit: submit),
+              if (detail == null) ...[
+                _TopBar(
+                  controller: search,
+                  onSubmit: submit,
+                  onChanged: updateSuggestions,
+                ),
+                if (suggestions.isNotEmpty)
+                  _Suggestions(
+                    movies: suggestions,
+                    onTap: (movie) => setState(() {
+                      detail = movie;
+                      suggestions = const [];
+                    }),
+                  ),
+              ],
               Expanded(
                 child: detail == null
                     ? Column(
@@ -114,19 +143,92 @@ class _HomePageState extends State<HomePage> {
 }
 
 class _TopBar extends StatelessWidget {
-  const _TopBar({required this.controller, required this.onSubmit});
+  const _TopBar({
+    required this.controller,
+    required this.onSubmit,
+    required this.onChanged,
+  });
   final TextEditingController controller;
   final VoidCallback onSubmit;
+  final ValueChanged<String> onChanged;
   @override
   Widget build(BuildContext c) => Padding(
-    padding: const EdgeInsets.all(20),
+    padding: const EdgeInsets.fromLTRB(24, 18, 24, 12),
     child: TextField(
       controller: controller,
+      onChanged: onChanged,
       onSubmitted: (_) => onSubmit(),
-      decoration: const InputDecoration(
+      style: const TextStyle(fontSize: 15),
+      decoration: InputDecoration(
         hintText: 'Tìm kiếm phim...',
-        prefixIcon: Icon(CupertinoIcons.search),
+        hintStyle: const TextStyle(color: Colors.white60),
+        prefixIcon: const Icon(CupertinoIcons.search, color: Colors.white70),
+        suffixIcon: controller.text.isEmpty
+            ? null
+            : IconButton(
+                onPressed: () {
+                  controller.clear();
+                  onSubmit();
+                },
+                icon: const Icon(CupertinoIcons.xmark_circle_fill),
+              ),
+        filled: true,
+        fillColor: const Color(0xFF1B1B1E),
+        contentPadding: const EdgeInsets.symmetric(vertical: 16),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: Colors.white12),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: Colors.white12),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: Color(0xFFFFC107), width: 1.2),
+        ),
       ),
+    ),
+  );
+}
+
+class _Suggestions extends StatelessWidget {
+  const _Suggestions({required this.movies, required this.onTap});
+  final List<Movie> movies;
+  final ValueChanged<Movie> onTap;
+  @override
+  Widget build(BuildContext context) => Container(
+    margin: const EdgeInsets.fromLTRB(24, 0, 24, 8),
+    decoration: BoxDecoration(
+      color: const Color(0xFF202023),
+      borderRadius: BorderRadius.circular(10),
+    ),
+    child: Column(
+      children: movies
+          .map(
+            (movie) => ListTile(
+              onTap: () => onTap(movie),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 14,
+                vertical: 4,
+              ),
+              leading: SizedBox(
+                width: 52,
+                height: 70,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(6),
+                  child: Image.network(movie.poster, fit: BoxFit.cover),
+                ),
+              ),
+              title: Text(
+                movie.name,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              subtitle: Text('${movie.year} • ${movie.original}'),
+            ),
+          )
+          .toList(),
     ),
   );
 }
@@ -336,6 +438,7 @@ class _Details extends StatelessWidget {
               ),
             ),
           ),
+          const SizedBox(height: 24),
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
