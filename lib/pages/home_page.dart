@@ -76,7 +76,7 @@ class _HomePageState extends State<HomePage> {
                 child: detail == null
                     ? Column(
                         children: [
-                          if (selected >= 3)
+                          if (selected >= 2)
                             MovieFilter(type: _typeForIndex(selected)),
                           Expanded(
                             child: _Results(

@@ -8,7 +8,13 @@ class MovieRepository {
   MovieRepository({http.Client? client}) : _client = client ?? http.Client();
   final http.Client _client;
   static const _baseUrl = 'https://phimapi.com';
-  Future<List<Movie>> latest() => _fetch(Uri.parse('$_baseUrl/v1/api/home'));
+  Future<List<Movie>> latest() async {
+    final response = await _client.get(Uri.parse('$_baseUrl/danh-sach/phim-moi-cap-nhat-v3').replace(queryParameters: {'page': '1', 'limit': '24'}));
+    if (response.statusCode < 200 || response.statusCode >= 300) throw Exception('Không thể tải phim mới');
+    final root = jsonDecode(response.body) as Map<String, dynamic>;
+    final items = root['items'];
+    return items is List ? items.whereType<Map<String, dynamic>>().map(Movie.fromJson).toList() : const [];
+  }
   Future<List<Movie>> category(String slug, {int page = 1}) => _fetch(
     Uri.parse('$_baseUrl/v1/api/danh-sach/$slug')
         .replace(queryParameters: {'limit': '24', 'page': '$page'}),
