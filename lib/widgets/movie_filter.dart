@@ -5,8 +5,9 @@ import 'package:provider/provider.dart';
 import '../state/app_state.dart';
 
 class MovieFilter extends StatefulWidget {
-  const MovieFilter({required this.type, super.key});
+  const MovieFilter({required this.type, this.onApplied, super.key});
   final String type;
+  final VoidCallback? onApplied;
   @override
   State<MovieFilter> createState() => _MovieFilterState();
 }
@@ -142,5 +143,6 @@ class _MovieFilterState extends State<MovieFilter> {
       newSortField: parts.first,
       newSortType: parts.last,
     );
+    widget.onApplied?.call();
   }
 }

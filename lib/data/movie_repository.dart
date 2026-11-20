@@ -82,7 +82,8 @@ class MovieRepository {
   }
 
   Future<List<Map<String, String>>> options(String path) async {
-    final response = await _client.get(Uri.parse('$_baseUrl/$path'));
+    final prefix = source == MovieApiSource.kkphim ? '/v1/api' : '';
+    final response = await _client.get(Uri.parse('$_baseUrl$prefix/$path'));
     if (response.statusCode < 200 || response.statusCode >= 300) {
       throw Exception('Không thể tải bộ lọc');
     }
@@ -141,8 +142,11 @@ class MovieRepository {
         ),
       );
     }
+    final listPath = type == 'phim-moi-cap-nhat-v3'
+        ? '$_baseUrl/v1/api/danh-sach'
+        : '$_baseUrl/v1/api/danh-sach/$type';
     return _fetch(
-      Uri.parse('$_baseUrl/v1/api/danh-sach/$type').replace(
+      Uri.parse(listPath).replace(
         queryParameters: {
           'page': '$page',
           'limit': '24',

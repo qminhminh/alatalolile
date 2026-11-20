@@ -31,12 +31,19 @@ class AppState extends ChangeNotifier {
 
   Future<void> switchSource(MovieApiSource value) async {
     repository.setSource(value);
+    await loadFavorites();
     await loadLatest();
   }
 
+  String get _favoritesKey => 'favorite_movies_${repository.source.name}';
+
   Future<void> loadFavorites() async {
     final prefs = await SharedPreferences.getInstance();
-    final raw = prefs.getStringList('favorite_movies') ?? const [];
+    final raw =
+        prefs.getStringList(_favoritesKey) ??
+        (repository.source == MovieApiSource.kkphim
+            ? prefs.getStringList('favorite_movies') ?? const []
+            : const []);
     favorites
       ..clear()
       ..addAll(
@@ -56,7 +63,7 @@ class AppState extends ChangeNotifier {
     }
     final prefs = await SharedPreferences.getInstance();
     await prefs.setStringList(
-      'favorite_movies',
+      _favoritesKey,
       favorites
           .map(
             (item) => jsonEncode({
@@ -78,6 +85,14 @@ class AppState extends ChangeNotifier {
   }
 
   bool isFavorite(String slug) => favorites.any((item) => item.slug == slug);
+
+  Future<void> selectFavorites() async {
+    await loadFavorites();
+    activeTitle = 'Phim yêu thích';
+    activeSlug = null;
+    movies = List.unmodifiable(favorites);
+    notifyListeners();
+  }
 
   Future<void> loadLatest() async {
     loading = true;
@@ -148,7 +163,11 @@ class AppState extends ChangeNotifier {
     await _load(
       () =>
           type == 'phim-moi-cap-nhat-v3' &&
-              repository.source == MovieApiSource.kkphim
+              repository.source == MovieApiSource.kkphim &&
+              newLanguage == null &&
+              newCategory == null &&
+              newCountry == null &&
+              newYear == null
           ? repository.latest()
           : repository.filtered(
               type:

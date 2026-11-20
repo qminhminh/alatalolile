@@ -85,21 +85,29 @@ class _HomePageState extends State<HomePage> {
         Expanded(
           child: Column(
             children: [
-              if (detail == null) ...[
+              if (detail == null && selected != 10) ...[
                 _TopBar(
                   controller: search,
                   onSubmit: submit,
                   onChanged: updateSuggestions,
                   onFilter: () {
                     setState(() {
-                      showFilter = !showFilter;
                       if (selected == 0) selected = 1;
+                      showFilter = true;
                     });
-                    if (showFilter) {
-                      context.read<AppState>().applyFilters(
-                        type: _typeForIndex(selected),
-                      );
-                    }
+                    showDialog<void>(
+                      context: context,
+                      builder: (context) => Dialog(
+                        backgroundColor: Colors.transparent,
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 980),
+                          child: MovieFilter(
+                            type: _typeForIndex(selected),
+                            onApplied: () => Navigator.of(context).pop(),
+                          ),
+                        ),
+                      ),
+                    );
                   },
                 ),
                 if (suggestions.isNotEmpty)
@@ -115,8 +123,6 @@ class _HomePageState extends State<HomePage> {
                 child: detail == null
                     ? Column(
                         children: [
-                          if (showFilter && selected >= 1 && selected != 10)
-                            MovieFilter(type: _typeForIndex(selected)),
                           Expanded(
                             child: _Results(
                               showAll: selected == 0,
@@ -140,12 +146,17 @@ class _HomePageState extends State<HomePage> {
   );
 
   void _selectSection(int index) {
+    final state = context.read<AppState>();
     setState(() {
       selected = index;
       detail = null;
       showFilter = index >= 1 && index != 10;
     });
-    if (index >= 10) return;
+    if (index == 10) {
+      state.selectFavorites();
+      return;
+    }
+    if (index > 10) return;
     const sections = <(String, String)>[
       ('Trang chủ', ''),
       ('Phim mới', 'phim-moi-cap-nhat-v3'),
@@ -158,7 +169,6 @@ class _HomePageState extends State<HomePage> {
       ('Lồng tiếng', 'phim-long-tieng'),
     ];
     final (title, slug) = sections[index];
-    final state = context.read<AppState>();
     if (slug.isEmpty) {
       state.loadLatest();
     } else if (slug == 'phim-moi-cap-nhat-v3') {
@@ -357,6 +367,19 @@ class _Results extends StatelessWidget {
     }
     return CustomScrollView(
       slivers: [
+        if (favoritesOnly)
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(30, 24, 30, 0),
+              child: _FavoriteSourceTabs(
+                selected: state.source,
+                onSelected: (source) async {
+                  await state.switchSource(source);
+                  await state.selectFavorites();
+                },
+              ),
+            ),
+          ),
         SliverPadding(
           padding: const EdgeInsets.fromLTRB(30, 30, 30, 14),
           sliver: SliverToBoxAdapter(
@@ -410,6 +433,27 @@ class _Results extends StatelessWidget {
     final index = titles.indexOf(title);
     return index < 0 ? 0 : index + 1;
   }
+}
+
+class _FavoriteSourceTabs extends StatelessWidget {
+  const _FavoriteSourceTabs({required this.selected, required this.onSelected});
+  final MovieApiSource selected;
+  final ValueChanged<MovieApiSource> onSelected;
+
+  @override
+  Widget build(BuildContext context) => Row(
+    children: MovieApiSource.values.map((source) {
+      final active = source == selected;
+      return Padding(
+        padding: const EdgeInsets.only(right: 10),
+        child: ChoiceChip(
+          label: Text(source == MovieApiSource.kkphim ? 'Nguồn 1' : 'Nguồn 2'),
+          selected: active,
+          onSelected: (_) => onSelected(source),
+        ),
+      );
+    }).toList(),
+  );
 }
 
 class _Pagination extends StatelessWidget {
