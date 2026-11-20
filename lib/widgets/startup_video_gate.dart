@@ -16,7 +16,7 @@ class StartupVideoGate extends StatefulWidget {
 
 class _StartupVideoGateState extends State<StartupVideoGate> {
   BetterPlayerController? _controller;
-  bool _closed = false;
+  bool _closed = true;
   int _plays = 0;
 
   bool get _desktop => !kIsWeb && defaultTargetPlatform == TargetPlatform.macOS;
@@ -24,7 +24,6 @@ class _StartupVideoGateState extends State<StartupVideoGate> {
   @override
   void initState() {
     super.initState();
-    if (_desktop) _startVideo();
   }
 
   Future<void> _startVideo() async {
