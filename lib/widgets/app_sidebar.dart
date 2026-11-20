@@ -32,74 +32,76 @@ class AppSidebar extends StatelessWidget {
       width: 220,
       color: const Color(0xFF121214),
       padding: const EdgeInsets.fromLTRB(18, 30, 14, 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Padding(
-            padding: EdgeInsets.only(left: 14, bottom: 42),
-            child: Text(
-              'ALATALOLILE',
-              style: TextStyle(
-                color: Color(0xFFFFC107),
-                fontSize: 18,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-          ),
-          if (source == MovieApiSource.kkphim) ...[
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
             const Padding(
-              padding: EdgeInsets.only(left: 14, bottom: 12),
+              padding: EdgeInsets.only(left: 14, bottom: 42),
               child: Text(
-                'KHÁM PHÁ',
-                style: TextStyle(color: Colors.white38, fontSize: 11),
-              ),
-            ),
-            ...List.generate(
-              items.length,
-              (i) => Material(
-                color: const Color(0xFF121214),
-                child: ListTile(
-                  onTap: () => onSelected(i),
-                  selected: selected == i,
-                  selectedTileColor: const Color(0x33FFC107),
-                  leading: Icon(items[i].$1),
-                  title: Text(items[i].$2),
+                'ALATALOLILE',
+                style: TextStyle(
+                  color: Color(0xFFFFC107),
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
                 ),
               ),
             ),
-          ],
-          const Padding(
-            padding: EdgeInsets.only(left: 14, top: 18, bottom: 8),
-            child: Text(
-              'NGUỒN PHIM',
-              style: TextStyle(color: Colors.white38, fontSize: 11),
-            ),
-          ),
-          ...MovieApiSource.values.map(
-            (item) => Material(
-              color: const Color(0xFF121214),
-              child: ListTile(
-                dense: true,
-                onTap: () => onSourceSelected(item),
-                selected: source == item,
-                selectedTileColor: const Color(0x33FFC107),
-                leading: const Icon(CupertinoIcons.cloud),
-                title: Text(_sourceName(item)),
+            if (source == MovieApiSource.kkphim) ...[
+              const Padding(
+                padding: EdgeInsets.only(left: 14, bottom: 12),
+                child: Text(
+                  'KHÁM PHÁ',
+                  style: TextStyle(color: Colors.white38, fontSize: 11),
+                ),
+              ),
+              ...List.generate(
+                items.length,
+                (i) => Material(
+                  color: const Color(0xFF121214),
+                  child: ListTile(
+                    onTap: () => onSelected(i),
+                    selected: selected == i,
+                    selectedTileColor: const Color(0x33FFC107),
+                    leading: Icon(items[i].$1),
+                    title: Text(items[i].$2),
+                  ),
+                ),
+              ),
+            ],
+            const Padding(
+              padding: EdgeInsets.only(left: 14, top: 18, bottom: 8),
+              child: Text(
+                'NGUỒN PHIM',
+                style: TextStyle(color: Colors.white38, fontSize: 11),
               ),
             ),
-          ),
-          const Spacer(),
-          const Divider(color: Colors.white12),
-          Material(
-            color: const Color(0xFF121214),
-            child: ListTile(
-              onTap: () => onSelected(10),
-              selected: selected == 10,
-              leading: Icon(CupertinoIcons.heart_fill),
-              title: const Text('Yêu thích'),
+            ...MovieApiSource.values.map(
+              (item) => Material(
+                color: const Color(0xFF121214),
+                child: ListTile(
+                  dense: true,
+                  onTap: () => onSourceSelected(item),
+                  selected: source == item,
+                  selectedTileColor: const Color(0x33FFC107),
+                  leading: const Icon(CupertinoIcons.cloud),
+                  title: Text(_sourceName(item)),
+                ),
+              ),
             ),
-          ),
-        ],
+            const SizedBox(height: 20),
+            const Divider(color: Colors.white12),
+            Material(
+              color: const Color(0xFF121214),
+              child: ListTile(
+                onTap: () => onSelected(10),
+                selected: selected == 10,
+                leading: Icon(CupertinoIcons.heart_fill),
+                title: const Text('Yêu thích'),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

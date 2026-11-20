@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 
 import '../models/movie.dart';
@@ -13,6 +14,38 @@ import '../widgets/movie_filter.dart';
 import '../widgets/skeleton.dart';
 import '../data/movie_repository.dart';
 import 'watch_page.dart';
+
+class _MobileHeader extends StatelessWidget {
+  const _MobileHeader({required this.onMenu, this.onBack});
+  final VoidCallback onMenu;
+  final VoidCallback? onBack;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    height: 54,
+    padding: const EdgeInsets.symmetric(horizontal: 12),
+    color: const Color(0xFF121214),
+    child: Row(
+      children: [
+        IconButton(
+          onPressed: onBack ?? onMenu,
+          icon: Icon(
+            onBack == null
+                ? CupertinoIcons.line_horizontal_3
+                : CupertinoIcons.chevron_left,
+          ),
+        ),
+        const Text(
+          'ALATALOLILE',
+          style: TextStyle(
+            color: Color(0xFFFFC107),
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+      ],
+    ),
+  );
+}
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -67,81 +100,128 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    body: Row(
-      children: [
-        AppSidebar(
-          selected: selected,
-          onSelected: _selectSection,
-          source: context.watch<AppState>().source,
-          onSourceSelected: (source) {
-            setState(() {
-              detail = null;
-              selected = 0;
-              showFilter = false;
-            });
-            context.read<AppState>().switchSource(source);
-          },
-        ),
-        Expanded(
-          child: Column(
+    body: SafeArea(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final compact =
+              constraints.maxWidth < 700 &&
+              defaultTargetPlatform != TargetPlatform.macOS;
+          return Row(
             children: [
-              if (detail == null && selected != 10) ...[
-                _TopBar(
-                  controller: search,
-                  onSubmit: submit,
-                  onChanged: updateSuggestions,
-                  onFilter: () {
+              if (!compact)
+                AppSidebar(
+                  selected: selected,
+                  onSelected: _selectSection,
+                  source: context.watch<AppState>().source,
+                  onSourceSelected: (source) {
                     setState(() {
-                      if (selected == 0) selected = 1;
-                      showFilter = true;
+                      detail = null;
+                      selected = 0;
+                      showFilter = false;
                     });
-                    showDialog<void>(
-                      context: context,
-                      builder: (context) => Dialog(
-                        backgroundColor: Colors.transparent,
-                        child: ConstrainedBox(
-                          constraints: const BoxConstraints(maxWidth: 980),
-                          child: MovieFilter(
-                            type: _typeForIndex(selected),
-                            onApplied: () => Navigator.of(context).pop(),
+                    context.read<AppState>().switchSource(source);
+                  },
+                ),
+              Expanded(
+                child: Column(
+                  children: [
+                    if (compact)
+                      _MobileHeader(
+                        onBack: detail == null
+                            ? null
+                            : () => setState(() => detail = null),
+                        onMenu: () => showDialog<void>(
+                          context: context,
+                          builder: (_) => Dialog(
+                            alignment: Alignment.centerLeft,
+                            insetPadding: EdgeInsets.zero,
+                            child: SizedBox(
+                              width: 250,
+                              height: constraints.maxHeight,
+                              child: AppSidebar(
+                                selected: selected,
+                                onSelected: (index) {
+                                  Navigator.pop(context);
+                                  _selectSection(index);
+                                },
+                                source: context.read<AppState>().source,
+                                onSourceSelected: (source) {
+                                  Navigator.pop(context);
+                                  setState(() {
+                                    detail = null;
+                                    selected = 0;
+                                    showFilter = false;
+                                  });
+                                  context.read<AppState>().switchSource(source);
+                                },
+                              ),
+                            ),
                           ),
                         ),
                       ),
-                    );
-                  },
-                ),
-                if (suggestions.isNotEmpty)
-                  _Suggestions(
-                    movies: suggestions,
-                    onTap: (movie) => setState(() {
-                      detail = movie;
-                      suggestions = const [];
-                    }),
-                  ),
-              ],
-              Expanded(
-                child: detail == null
-                    ? Column(
-                        children: [
-                          Expanded(
-                            child: _Results(
-                              showAll: selected == 0,
-                              favoritesOnly: selected == 10,
-                              onTap: (movie) => setState(() => detail = movie),
+                    if (detail == null && selected != 10) ...[
+                      _TopBar(
+                        controller: search,
+                        onSubmit: submit,
+                        onChanged: updateSuggestions,
+                        onFilter: () {
+                          setState(() {
+                            if (selected == 0) selected = 1;
+                            showFilter = true;
+                          });
+                          showDialog<void>(
+                            context: context,
+                            builder: (context) => Dialog(
+                              backgroundColor: Colors.transparent,
+                              child: ConstrainedBox(
+                                constraints: const BoxConstraints(
+                                  maxWidth: 980,
+                                ),
+                                child: MovieFilter(
+                                  type: _typeForIndex(selected),
+                                  onApplied: () => Navigator.of(context).pop(),
+                                ),
+                              ),
                             ),
-                          ),
-                        ],
-                      )
-                    : _Details(
-                        movie: detail!,
-                        repository: context.read<AppState>().repository,
-                        onBack: () => setState(() => detail = null),
+                          );
+                        },
                       ),
+                      if (suggestions.isNotEmpty)
+                        _Suggestions(
+                          movies: suggestions,
+                          onTap: (movie) => setState(() {
+                            detail = movie;
+                            suggestions = const [];
+                          }),
+                        ),
+                    ],
+                    Expanded(
+                      child: detail == null
+                          ? Column(
+                              children: [
+                                Expanded(
+                                  child: _Results(
+                                    showAll: selected == 0,
+                                    favoritesOnly: selected == 10,
+                                    onTap: (movie) =>
+                                        setState(() => detail = movie),
+                                  ),
+                                ),
+                              ],
+                            )
+                          : _Details(
+                              movie: detail!,
+                              repository: context.read<AppState>().repository,
+                              onBack: () => setState(() => detail = null),
+                            ),
+                    ),
+                  ],
+                ),
               ),
             ],
-          ),
-        ),
-      ],
+          );
+        },
+      ),
     ),
   );
 
@@ -390,7 +470,7 @@ class _Results extends StatelessWidget {
           ),
         ),
         SliverPadding(
-          padding: const EdgeInsets.fromLTRB(30, 0, 30, 36),
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 36),
           sliver: SliverGrid(
             delegate: SliverChildBuilderDelegate(
               (_, index) => MovieCard(
@@ -400,7 +480,7 @@ class _Results extends StatelessWidget {
               childCount: state.movies.length,
             ),
             gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-              maxCrossAxisExtent: 165,
+              maxCrossAxisExtent: 180,
               mainAxisExtent: 410,
               crossAxisSpacing: 18,
               mainAxisSpacing: 24,
@@ -554,6 +634,7 @@ class _Details extends StatelessWidget {
   Widget build(BuildContext c) => FutureBuilder<MovieDetail>(
     future: repository.detail(movie.slug),
     builder: (context, snapshot) {
+      final compact = MediaQuery.sizeOf(context).width < 700;
       final detail = snapshot.data;
       if (snapshot.connectionState == ConnectionState.waiting) {
         return const Center(child: CircularProgressIndicator());
@@ -564,50 +645,69 @@ class _Details extends StatelessWidget {
       return ListView(
         padding: const EdgeInsets.all(30),
         children: [
-          Align(
-            alignment: Alignment.centerLeft,
-            child: TextButton.icon(
-              onPressed: onBack,
-              icon: const Icon(CupertinoIcons.chevron_left, size: 24),
-              label: const Text(
-                'Quay lại',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-              ),
-              style: TextButton.styleFrom(
-                foregroundColor: const Color(0xFFFFC107),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 14,
+          if (!compact)
+            Align(
+              alignment: Alignment.centerLeft,
+              child: TextButton.icon(
+                onPressed: onBack,
+                icon: const Icon(CupertinoIcons.chevron_left, size: 24),
+                label: const Text(
+                  'Quay lại',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
                 ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(18),
+                style: TextButton.styleFrom(
+                  foregroundColor: const Color(0xFFFFC107),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 14,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(18),
+                  ),
                 ),
               ),
             ),
-          ),
           const SizedBox(height: 24),
-          Row(
+          Flex(
+            direction: MediaQuery.sizeOf(context).width < 700
+                ? Axis.vertical
+                : Axis.horizontal,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              SizedBox(
-                width: 230,
-                height: 330,
-                child: Image.network(movie.poster, fit: BoxFit.cover),
+              Align(
+                alignment: compact ? Alignment.center : Alignment.centerLeft,
+                child: SizedBox(
+                  width: compact ? 210 : 230,
+                  height: compact ? 300 : 330,
+                  child: Image.network(movie.poster, fit: BoxFit.cover),
+                ),
               ),
-              const SizedBox(width: 24),
-              Expanded(
+              SizedBox(
+                width: MediaQuery.sizeOf(context).width < 700 ? 0 : 24,
+                height: MediaQuery.sizeOf(context).width < 700 ? 20 : 0,
+              ),
+              SizedBox(
+                width: MediaQuery.sizeOf(context).width < 700
+                    ? MediaQuery.sizeOf(context).width - 60
+                    : MediaQuery.sizeOf(context).width - 320,
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: compact
+                      ? CrossAxisAlignment.center
+                      : CrossAxisAlignment.start,
                   children: [
                     Text(
                       movie.name,
+                      textAlign: compact ? TextAlign.center : TextAlign.start,
                       style: const TextStyle(
                         fontSize: 30,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     const SizedBox(height: 12),
-                    Text(movie.original),
+                    Text(
+                      movie.original,
+                      textAlign: compact ? TextAlign.center : TextAlign.start,
+                    ),
                     const SizedBox(height: 22),
                     Wrap(
                       spacing: 16,
@@ -674,6 +774,7 @@ class _Details extends StatelessWidget {
                     const SizedBox(height: 18),
                     Text(
                       detail.content,
+                      textAlign: compact ? TextAlign.center : TextAlign.start,
                       style: const TextStyle(
                         color: Colors.white70,
                         height: 1.45,
@@ -683,6 +784,9 @@ class _Details extends StatelessWidget {
                     ),
                     const SizedBox(height: 16),
                     Wrap(
+                      alignment: compact
+                          ? WrapAlignment.center
+                          : WrapAlignment.start,
                       spacing: 18,
                       runSpacing: 10,
                       children: [
