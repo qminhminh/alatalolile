@@ -1,0 +1,43 @@
+name: Build Flutter Windows Release
+
+on:
+  push:
+    branches: [ main, master ] # Tự động chạy khi push code lên nhánh main hoặc master
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch: # Cho phép bấm nút chạy thủ công bất cứ lúc nào
+
+jobs:
+  build_windows:
+    name: Build Windows Release
+    runs-on: windows-latest # Bắt buộc dùng runner của Windows để build app Windows
+
+    steps:
+      - name: 1. Checkout code
+        uses: actions/checkout@v4
+
+      - name: 2. Cài đặt Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable' # Có thể đổi thành 'beta' hoặc chỉ định version cụ thể (vd: '3.24.0')
+          cache: true
+
+      - name: 3. Kiểm tra môi trường Flutter
+        run: flutter doctor -v
+
+      - name: 4. Tải các thư viện (Dependencies)
+        run: flutter pub get
+
+      - name: 5. Build Windows Release
+        run: flutter build windows --release
+
+      - name: 6. Nén thư mục Release thành file ZIP
+        shell: pwsh
+        run: |
+          Compress-Archive -Path build\windows\x64\runner\Release\* -DestinationPath app-windows-release.zip
+
+      - name: 7. Upload file cài đặt lên GitHub Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: Windows-Release-Build
+          path: app-windows-release.zip
