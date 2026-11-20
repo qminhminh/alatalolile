@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -20,16 +22,22 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final search = TextEditingController();
+  Timer? searchDebounce;
+  int searchGeneration = 0;
   Movie? detail;
   List<Movie> suggestions = const [];
   int selected = 0;
+  bool showFilter = false;
   @override
   void dispose() {
     search.dispose();
+    searchDebounce?.cancel();
     super.dispose();
   }
 
   void submit() {
+    searchGeneration++;
+    searchDebounce?.cancel();
     final value = search.text.trim();
     setState(() => selected = value.isEmpty ? 0 : 1);
     final state = context.read<AppState>();
@@ -38,16 +46,23 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> updateSuggestions(String value) async {
+    final generation = ++searchGeneration;
+    searchDebounce?.cancel();
     if (value.trim().length < 2) {
       setState(() => suggestions = const []);
       return;
     }
-    final results = await context.read<AppState>().repository.search(
-      value.trim(),
-    );
-    if (mounted && search.text.trim() == value.trim()) {
+    searchDebounce = Timer(const Duration(milliseconds: 450), () async {
+      final results = await context.read<AppState>().repository.search(
+        value.trim(),
+      );
+      if (!mounted ||
+          generation != searchGeneration ||
+          search.text.trim() != value.trim()) {
+        return;
+      }
       setState(() => suggestions = results.take(6).toList());
-    }
+    });
   }
 
   @override
@@ -62,6 +77,7 @@ class _HomePageState extends State<HomePage> {
             setState(() {
               detail = null;
               selected = 0;
+              showFilter = false;
             });
             context.read<AppState>().switchSource(source);
           },
@@ -74,6 +90,17 @@ class _HomePageState extends State<HomePage> {
                   controller: search,
                   onSubmit: submit,
                   onChanged: updateSuggestions,
+                  onFilter: () {
+                    setState(() {
+                      showFilter = !showFilter;
+                      if (selected == 0) selected = 1;
+                    });
+                    if (showFilter) {
+                      context.read<AppState>().applyFilters(
+                        type: _typeForIndex(selected),
+                      );
+                    }
+                  },
                 ),
                 if (suggestions.isNotEmpty)
                   _Suggestions(
@@ -88,7 +115,7 @@ class _HomePageState extends State<HomePage> {
                 child: detail == null
                     ? Column(
                         children: [
-                          if (selected >= 1 && selected != 10)
+                          if (showFilter && selected >= 1 && selected != 10)
                             MovieFilter(type: _typeForIndex(selected)),
                           Expanded(
                             child: _Results(
@@ -116,6 +143,7 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       selected = index;
       detail = null;
+      showFilter = index >= 1 && index != 10;
     });
     if (index >= 10) return;
     const sections = <(String, String)>[
@@ -161,47 +189,68 @@ class _TopBar extends StatelessWidget {
     required this.controller,
     required this.onSubmit,
     required this.onChanged,
+    required this.onFilter,
   });
   final TextEditingController controller;
   final VoidCallback onSubmit;
   final ValueChanged<String> onChanged;
+  final VoidCallback onFilter;
   @override
   Widget build(BuildContext c) => Padding(
     padding: const EdgeInsets.fromLTRB(24, 18, 24, 12),
-    child: TextField(
-      controller: controller,
-      onChanged: onChanged,
-      onSubmitted: (_) => onSubmit(),
-      style: const TextStyle(fontSize: 15),
-      decoration: InputDecoration(
-        hintText: 'Tìm kiếm phim...',
-        hintStyle: const TextStyle(color: Colors.white60),
-        prefixIcon: const Icon(CupertinoIcons.search, color: Colors.white70),
-        suffixIcon: controller.text.isEmpty
-            ? null
-            : IconButton(
-                onPressed: () {
-                  controller.clear();
-                  onSubmit();
-                },
-                icon: const Icon(CupertinoIcons.xmark_circle_fill),
+    child: Row(
+      children: [
+        Expanded(
+          child: TextField(
+            controller: controller,
+            onChanged: onChanged,
+            onSubmitted: (_) => onSubmit(),
+            style: const TextStyle(fontSize: 15),
+            decoration: InputDecoration(
+              hintText: 'Tìm kiếm phim...',
+              hintStyle: const TextStyle(color: Colors.white60),
+              prefixIcon: const Icon(
+                CupertinoIcons.search,
+                color: Colors.white70,
               ),
-        filled: true,
-        fillColor: const Color(0xFF1B1B1E),
-        contentPadding: const EdgeInsets.symmetric(vertical: 16),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: Colors.white12),
+              suffixIcon: controller.text.isEmpty
+                  ? null
+                  : IconButton(
+                      onPressed: () {
+                        controller.clear();
+                        onSubmit();
+                      },
+                      icon: const Icon(CupertinoIcons.xmark_circle_fill),
+                    ),
+              filled: true,
+              fillColor: const Color(0xFF1B1B1E),
+              contentPadding: const EdgeInsets.symmetric(vertical: 16),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14),
+                borderSide: const BorderSide(color: Colors.white12),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14),
+                borderSide: const BorderSide(color: Colors.white12),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14),
+                borderSide: const BorderSide(
+                  color: Color(0xFFFFC107),
+                  width: 1.2,
+                ),
+              ),
+            ),
+          ),
         ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: Colors.white12),
+        const SizedBox(width: 10),
+        IconButton(
+          tooltip: 'Bộ lọc phim',
+          onPressed: onFilter,
+          icon: const Icon(CupertinoIcons.slider_horizontal_3),
+          color: const Color(0xFFFFC107),
         ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: Color(0xFFFFC107), width: 1.2),
-        ),
-      ),
+      ],
     ),
   );
 }
@@ -220,26 +269,31 @@ class _Suggestions extends StatelessWidget {
     child: Column(
       children: movies
           .map(
-            (movie) => ListTile(
-              onTap: () => onTap(movie),
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 14,
-                vertical: 4,
-              ),
-              leading: SizedBox(
-                width: 52,
-                height: 70,
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(6),
-                  child: Image.network(movie.poster, fit: BoxFit.cover),
+            (movie) => Material(
+              color: const Color(0xFF202023),
+              child: ListTile(
+                onTap: () => onTap(movie),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 4,
                 ),
+                leading: SizedBox(
+                  width: 52,
+                  height: 70,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(6),
+                    child: movie.poster.isEmpty
+                        ? Image.asset('assets/images/logo.png')
+                        : Image.network(movie.poster, fit: BoxFit.cover),
+                  ),
+                ),
+                title: Text(
+                  movie.name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                subtitle: Text('${movie.year} • ${movie.original}'),
               ),
-              title: Text(
-                movie.name,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-              subtitle: Text('${movie.year} • ${movie.original}'),
             ),
           )
           .toList(),

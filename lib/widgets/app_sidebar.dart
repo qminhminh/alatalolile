@@ -46,30 +46,32 @@ class AppSidebar extends StatelessWidget {
               ),
             ),
           ),
-          const Padding(
-            padding: EdgeInsets.only(left: 14, bottom: 12),
-            child: Text(
-              'KHÁM PHÁ',
-              style: TextStyle(color: Colors.white38, fontSize: 11),
-            ),
-          ),
-          ...List.generate(
-            items.length,
-            (i) => Material(
-              color: const Color(0xFF121214),
-              child: ListTile(
-                onTap: () => onSelected(i),
-                selected: selected == i,
-                selectedTileColor: const Color(0x33FFC107),
-                leading: Icon(items[i].$1),
-                title: Text(items[i].$2),
+          if (source == MovieApiSource.kkphim) ...[
+            const Padding(
+              padding: EdgeInsets.only(left: 14, bottom: 12),
+              child: Text(
+                'KHÁM PHÁ',
+                style: TextStyle(color: Colors.white38, fontSize: 11),
               ),
             ),
-          ),
+            ...List.generate(
+              items.length,
+              (i) => Material(
+                color: const Color(0xFF121214),
+                child: ListTile(
+                  onTap: () => onSelected(i),
+                  selected: selected == i,
+                  selectedTileColor: const Color(0x33FFC107),
+                  leading: Icon(items[i].$1),
+                  title: Text(items[i].$2),
+                ),
+              ),
+            ),
+          ],
           const Padding(
             padding: EdgeInsets.only(left: 14, top: 18, bottom: 8),
             child: Text(
-              'NGUỒN API',
+              'NGUỒN PHIM',
               style: TextStyle(color: Colors.white38, fontSize: 11),
             ),
           ),
@@ -103,9 +105,7 @@ class AppSidebar extends StatelessWidget {
   }
 
   String _sourceName(MovieApiSource source) => switch (source) {
-    MovieApiSource.kkphim => 'KKPhim',
-    MovieApiSource.nguonc => 'NguonC',
-    MovieApiSource.vsmov => 'VSMOV / Phim4K',
-    MovieApiSource.tophim => 'Tophim',
+    MovieApiSource.kkphim => 'Nguồn 1',
+    MovieApiSource.vsmov => 'Nguồn 2',
   };
 }

@@ -45,14 +45,21 @@ class _Poster extends StatelessWidget {
     children: [
       ClipRRect(
         borderRadius: const BorderRadius.vertical(top: Radius.circular(10)),
-        child: Image.network(
-          movie.poster,
-          fit: BoxFit.cover,
-          width: double.infinity,
-          height: double.infinity,
-          errorBuilder: (context, error, stackTrace) =>
-              const ColoredBox(color: Colors.white10),
-        ),
+        child: movie.poster.isEmpty
+            ? Image.asset(
+                'assets/images/logo.png',
+                fit: BoxFit.contain,
+                width: double.infinity,
+                height: double.infinity,
+              )
+            : Image.network(
+                movie.poster,
+                fit: BoxFit.cover,
+                width: double.infinity,
+                height: double.infinity,
+                errorBuilder: (context, error, stackTrace) =>
+                    const ColoredBox(color: Colors.white10),
+              ),
       ),
       Positioned(
         top: 8,

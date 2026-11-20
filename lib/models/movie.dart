@@ -25,7 +25,9 @@ class Movie {
   final String language, content;
   factory Movie.fromJson(Map<String, dynamic> json) {
     String image(Object? value) {
-      final text = value?.toString() ?? '';
+      if (value is Map || value == null) return '';
+      final text = value.toString();
+      if (text.isEmpty || text == '{}') return '';
       return text.startsWith('http') ? text : 'https://phimimg.com/$text';
     }
 

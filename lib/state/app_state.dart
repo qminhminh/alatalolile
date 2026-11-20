@@ -24,6 +24,8 @@ class AppState extends ChangeNotifier {
   String sortField = 'modified.time';
   String sortType = 'desc';
   String? language, category, country;
+  String searchKeyword = '';
+  bool hasActiveFilters = false;
   int? year;
   final List<Movie> favorites = [];
 
@@ -133,6 +135,11 @@ class AppState extends ChangeNotifier {
     category = newCategory;
     country = newCountry;
     year = newYear;
+    hasActiveFilters =
+        newLanguage != null ||
+        newCategory != null ||
+        newCountry != null ||
+        newYear != null;
     sortField = newSortField;
     sortType = newSortType;
     activeSlug = type;
@@ -157,8 +164,13 @@ class AppState extends ChangeNotifier {
     );
   }
 
-  Future<void> search(String keyword) =>
-      _load(() => repository.search(keyword));
+  Future<void> search(String keyword, {int page = 1}) {
+    searchKeyword = keyword;
+    activeTitle = 'Kết quả tìm kiếm: $keyword';
+    activeSlug = 'search';
+    currentPage = page;
+    return _load(() => repository.search(keyword, page: page));
+  }
 
   Future<void> loadCategory(String title, String slug) async {
     activeTitle = title;
@@ -168,9 +180,26 @@ class AppState extends ChangeNotifier {
   }
 
   Future<void> goToPage(int page) async {
-    if (activeSlug == null || page < 1 || page > totalPages) return;
+    if (page < 1 || page > totalPages) return;
     currentPage = page;
-    await _load(() => repository.category(activeSlug!, page: page));
+    if (activeSlug == 'search') {
+      await search(searchKeyword, page: page);
+    } else if (hasActiveFilters && activeSlug != null) {
+      await _load(
+        () => repository.filtered(
+          type: activeSlug!,
+          language: language,
+          category: category,
+          country: country,
+          year: year,
+          sortField: sortField,
+          sortType: sortType,
+          page: page,
+        ),
+      );
+    } else if (activeSlug != null) {
+      await _load(() => repository.category(activeSlug!, page: page));
+    }
   }
 
   Future<void> _load(Future<List<Movie>> Function() request) async {
