@@ -15,7 +15,8 @@ import '../data/movie_repository.dart';
 import 'watch_page.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  const HomePage({this.onReplayIntro, super.key});
+  final VoidCallback? onReplayIntro;
   @override
   State<HomePage> createState() => _HomePageState();
 }
@@ -81,6 +82,7 @@ class _HomePageState extends State<HomePage> {
             });
             context.read<AppState>().switchSource(source);
           },
+          onReplayIntro: widget.onReplayIntro,
         ),
         Expanded(
           child: Column(

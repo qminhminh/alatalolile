@@ -1,0 +1,28 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [main, master, windown]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - run: flutter analyze
+      - run: flutter build apk --release
+      - uses: actions/upload-artifact@v4
+        with:
+          name: alatalolile-android-apk
+          path: build/app/outputs/flutter-apk/app-release.apk

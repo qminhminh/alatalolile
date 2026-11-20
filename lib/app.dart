@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'data/movie_repository.dart';
-import 'pages/home_page.dart';
 import 'state/app_state.dart';
+import 'widgets/startup_video_gate.dart';
 
 class AlatalolileApp extends StatelessWidget {
   const AlatalolileApp({super.key});
@@ -22,7 +22,7 @@ class AlatalolileApp extends StatelessWidget {
           brightness: Brightness.dark,
         ),
       ),
-      home: const HomePage(),
+      home: const StartupVideoGate(),
     ),
   );
 }

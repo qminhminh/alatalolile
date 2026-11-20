@@ -3,7 +3,7 @@ description: "alatalolile"
 publish_to: 'none'
 
 
-version: 2.0.0+1
+version: 3.0.0+10
 
 environment:
   sdk: ^3.14.0
@@ -20,6 +20,8 @@ dependencies:
   shared_preferences: ^2.5.6
   cached_network_image: ^4.0.7
   webview_all: ^1.5.2
+  better_player: ^1.37.0
+  path_provider: ^2.1.6
 
 dev_dependencies:
   flutter_test:
@@ -37,6 +39,7 @@ flutter:
 
   assets:
     - assets/images/
+    - assets/videos/he_he_he.mp4
 
  
   fonts:

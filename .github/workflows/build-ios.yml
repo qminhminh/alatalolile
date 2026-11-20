@@ -1,0 +1,30 @@
+name: Build iOS Release
+
+on:
+  push:
+    branches: [main, master, windown]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ios:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter config --enable-ios
+      - run: flutter pub get
+      - run: flutter analyze
+      - run: flutter build ios --release --no-codesign
+      - run: ditto -c -k --sequesterRsrc --keepParent build/ios/iphoneos/Runner.app alatalolile-ios-unsigned.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: alatalolile-ios-unsigned
+          path: alatalolile-ios-unsigned.zip

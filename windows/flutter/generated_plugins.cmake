@@ -3,6 +3,7 @@
 #
 
 list(APPEND FLUTTER_PLUGIN_LIST
+  better_player_windows
   url_launcher_windows
   webview_all_windows
 )

@@ -33,6 +33,70 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.13.1"
+  better_player:
+    dependency: "direct main"
+    description:
+      name: better_player
+      sha256: "0480d2e086413cad1b8cac7437f2bf59dc9cf74655b5cf255fb8c3cab5e8b539"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.37.0"
+  better_player_android:
+    dependency: transitive
+    description:
+      name: better_player_android
+      sha256: "24d3ce6c357186e0ec1eed63519e47a552bdc497ad48556f32593f5d6b406672"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.13.1"
+  better_player_ios:
+    dependency: transitive
+    description:
+      name: better_player_ios
+      sha256: "1cef0f866374217ebcb0c984a4a014c9a8f5bce6b219666b0d5b58fd4ec20bc1"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.14.0"
+  better_player_linux:
+    dependency: transitive
+    description:
+      name: better_player_linux
+      sha256: "97d9eb16a587df4d714c1906ef2c49b825c1483e7d4c9050d63e696e26998f6e"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.1.1"
+  better_player_macos:
+    dependency: transitive
+    description:
+      name: better_player_macos
+      sha256: "2831557fc4a8617e21631180bc1b60ac4f4535f383b918eb20ab1c14fd4e00ff"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.9.0"
+  better_player_platform_interface:
+    dependency: transitive
+    description:
+      name: better_player_platform_interface
+      sha256: e5218199dd12ffe6f43c01d5cdeecad0b53125926f8da8c3f4b90136d8b55ec1
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.8.0"
+  better_player_web:
+    dependency: transitive
+    description:
+      name: better_player_web
+      sha256: d7b365221f7724f22d3fef7840e45af2493a784e2429a30e980f807bcb7c9539
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.6.1"
+  better_player_windows:
+    dependency: transitive
+    description:
+      name: better_player_windows
+      sha256: eddc817dce6af08e74de456ad711ffd987a641c45f73998cbe9ccbf6ab5ebf22
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.5.1"
   boolean_selector:
     dependency: transitive
     description:
@@ -145,6 +209,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.1.7"
+  dbus:
+    dependency: transitive
+    description:
+      name: dbus
+      sha256: fe6b46eae35441227e9e750656d06a4f40c230fe96e4390da7d7ebc69a60f0b3
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.8.1"
   fake_async:
     dependency: transitive
     description:
@@ -161,6 +233,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.2.0"
+  ffi_leak_tracker:
+    dependency: transitive
+    description:
+      name: ffi_leak_tracker
+      sha256: "4093d4ef9ca06ffe2786e73bfb25e22aa92112b9bb4ec941f11e3e6b61489a97"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.1.2"
   file:
     dependency: transitive
     description:
@@ -421,6 +501,22 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.0.0"
+  package_info_plus:
+    dependency: transitive
+    description:
+      name: package_info_plus
+      sha256: "73ef2cd5c11a7548f9b7f6fc2a4f6113de2e64aa2a70de63feede95548822908"
+      url: "https://pub.dev"
+    source: hosted
+    version: "10.2.2"
+  package_info_plus_platform_interface:
+    dependency: transitive
+    description:
+      name: package_info_plus_platform_interface
+      sha256: db762cb2f4f25ee60fb6359773861b0f199e00b90d237bd85a76a1e806b46ef4
+      url: "https://pub.dev"
+    source: hosted
+    version: "4.1.0"
   path:
     dependency: transitive
     description:
@@ -430,7 +526,7 @@ packages:
     source: hosted
     version: "1.9.1"
   path_provider:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: path_provider
       sha256: a7f4874f987173da295a61c181b8ee71dab59b332a486b391babf26a1b884825
@@ -794,6 +890,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.4.4"
+  visibility_detector:
+    dependency: transitive
+    description:
+      name: visibility_detector
+      sha256: dd5cc11e13494f432d15939c3aa8ae76844c42b723398643ce9addb88a5ed420
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.4.0+2"
   vm_service:
     dependency: transitive
     description:
@@ -802,6 +906,22 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "15.4.0"
+  wakelock_plus:
+    dependency: transitive
+    description:
+      name: wakelock_plus
+      sha256: "39a1d99085cf3190d41305bca05f0c0d77522f355f7f99bb648ee231192d9d68"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.8.2"
+  wakelock_plus_platform_interface:
+    dependency: transitive
+    description:
+      name: wakelock_plus_platform_interface
+      sha256: "764c25504562abc8ac3406f5d175f126b276e6ba916c7c2675690b73368ca384"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.7.0"
   web:
     dependency: transitive
     description:
@@ -874,6 +994,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.5.2"
+  win32:
+    dependency: transitive
+    description:
+      name: win32
+      sha256: a0b93865d5644f11cf6a8c3f6db909f1ec168958b5805f6cc684adea957cd63d
+      url: "https://pub.dev"
+    source: hosted
+    version: "6.4.0"
   xdg_directories:
     dependency: transitive
     description:
