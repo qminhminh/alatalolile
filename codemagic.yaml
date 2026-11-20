@@ -1,0 +1,29 @@
+workflows:
+  windows-release:
+    name: Alatalolile Windows Release
+    instance_type: windows_x2
+    max_build_duration: 60
+
+    environment:
+      flutter: stable
+
+    scripts:
+      - name: Get Flutter packages
+        script: flutter pub get
+
+      - name: Enable Windows desktop
+        script: flutter config --enable-windows-desktop
+
+      - name: Analyze Flutter project
+        script: flutter analyze
+
+      - name: Build Windows release
+        script: flutter build windows --release
+
+      - name: Package Windows application
+        script: |
+          cd build/windows/x64/runner/Release
+          7z a -r ../../../../../alatalolile-windows.zip ./*
+
+    artifacts:
+      - alatalolile-windows.zip
