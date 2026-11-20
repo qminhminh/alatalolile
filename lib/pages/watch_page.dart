@@ -229,7 +229,7 @@ class _VideoSurfaceState extends State<_VideoSurface> {
             bottom: 12,
             child: Center(
               child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 560),
+                constraints: const BoxConstraints(maxWidth: 300),
                 child: _VideoControls(
                   controller: widget.controller,
                   onFullscreen: widget.onFullscreen,
