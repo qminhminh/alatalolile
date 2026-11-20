@@ -54,7 +54,18 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) => Scaffold(
     body: Row(
       children: [
-        AppSidebar(selected: selected, onSelected: _selectSection),
+        AppSidebar(
+          selected: selected,
+          onSelected: _selectSection,
+          source: context.watch<AppState>().source,
+          onSourceSelected: (source) {
+            setState(() {
+              detail = null;
+              selected = 0;
+            });
+            context.read<AppState>().switchSource(source);
+          },
+        ),
         Expanded(
           child: Column(
             children: [

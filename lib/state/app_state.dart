@@ -10,6 +10,7 @@ import '../models/movie.dart';
 class AppState extends ChangeNotifier {
   AppState(this.repository);
   final MovieRepository repository;
+  MovieApiSource get source => repository.source;
   List<Movie> movies = const [];
   Map<String, List<Movie>> sections = const {};
   bool loading = false;
@@ -25,6 +26,11 @@ class AppState extends ChangeNotifier {
   String? language, category, country;
   int? year;
   final List<Movie> favorites = [];
+
+  Future<void> switchSource(MovieApiSource value) async {
+    repository.setSource(value);
+    await loadLatest();
+  }
 
   Future<void> loadFavorites() async {
     final prefs = await SharedPreferences.getInstance();
@@ -131,10 +137,16 @@ class AppState extends ChangeNotifier {
     sortType = newSortType;
     activeSlug = type;
     await _load(
-      () => type == 'phim-moi-cap-nhat-v3'
+      () =>
+          type == 'phim-moi-cap-nhat-v3' &&
+              repository.source == MovieApiSource.kkphim
           ? repository.latest()
           : repository.filtered(
-              type: type,
+              type:
+                  repository.source == MovieApiSource.vsmov &&
+                      type == 'phim-moi-cap-nhat-v3'
+                  ? 'phim-moi-cap-nhat'
+                  : type,
               language: language,
               category: category,
               country: country,

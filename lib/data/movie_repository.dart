@@ -4,14 +4,31 @@ import 'package:http/http.dart' as http;
 
 import '../models/movie.dart';
 
+enum MovieApiSource { kkphim, nguonc, vsmov, tophim }
+
 class MovieRepository {
   MovieRepository({http.Client? client}) : _client = client ?? http.Client();
   final http.Client _client;
-  static const _baseUrl = 'https://phimapi.com';
+  MovieApiSource source = MovieApiSource.kkphim;
+  String get _baseUrl => switch (source) {
+    MovieApiSource.kkphim => 'https://phimapi.com',
+    MovieApiSource.nguonc => 'https://phim.nguonc.com/api',
+    MovieApiSource.vsmov => 'https://vsmov.com/api',
+    MovieApiSource.tophim => 'https://tophim.top',
+  };
+
+  void setSource(MovieApiSource value) => source = value;
   Future<List<Movie>> latest() async {
+    final path = switch (source) {
+      MovieApiSource.kkphim => 'danh-sach/phim-moi-cap-nhat-v3',
+      MovieApiSource.vsmov => 'danh-sach/phim-moi-cap-nhat',
+      MovieApiSource.nguonc => 'films/phim-moi-cap-nhat',
+      MovieApiSource.tophim => 'danh-sach/phim-moi-cap-nhat',
+    };
     final response = await _client.get(
-      Uri.parse('$_baseUrl/danh-sach/phim-moi-cap-nhat-v3')
+      Uri.parse('$_baseUrl/$path')
           .replace(queryParameters: {'page': '1', 'limit': '24'}),
+      headers: const {'accept': 'application/json'},
     );
     if (response.statusCode < 200 || response.statusCode >= 300) {
       throw Exception('Không thể tải phim mới');
@@ -19,17 +36,43 @@ class MovieRepository {
     final root = jsonDecode(response.body) as Map<String, dynamic>;
     final items = root['items'];
     return items is List
-        ? items.whereType<Map<String, dynamic>>().map(Movie.fromJson).toList()
+        ? items
+              .whereType<Map>()
+              .map(
+                (item) => Movie.fromJson(
+                  _normalizeVsmovItem(Map<String, dynamic>.from(item)),
+                ),
+              )
+              .toList()
         : const [];
   }
 
-  Future<List<Movie>> category(String slug, {int page = 1}) => _fetch(
-    Uri.parse('$_baseUrl/v1/api/danh-sach/$slug')
-        .replace(queryParameters: {'limit': '24', 'page': '$page'}),
-  );
+  Future<List<Movie>> category(String slug, {int page = 1}) {
+    if (source == MovieApiSource.vsmov &&
+        !{'phim-le', 'phim-bo'}.contains(slug)) {
+      return Future.value(const []);
+    }
+    return _fetch(
+      Uri.parse(
+        source == MovieApiSource.kkphim
+            ? '$_baseUrl/v1/api/danh-sach/$slug'
+            : '$_baseUrl/danh-sach/$slug',
+      ).replace(queryParameters: {'limit': '24', 'page': '$page'}),
+    );
+  }
+
   Future<List<Movie>> search(String keyword) => _fetch(
-    Uri.parse('$_baseUrl/v1/api/tim-kiem')
-        .replace(queryParameters: {'keyword': keyword}),
+    Uri.parse(
+      source == MovieApiSource.kkphim
+          ? '$_baseUrl/v1/api/tim-kiem'
+          : '$_baseUrl/tim-kiem',
+    ).replace(
+      queryParameters: {
+        'keyword': keyword,
+        if (source == MovieApiSource.vsmov) 'limit': '20',
+        if (source == MovieApiSource.vsmov) 'page': '1',
+      },
+    ),
   );
   Future<List<Map<String, String>>> options(String path) async {
     final response = await _client.get(Uri.parse('$_baseUrl/$path'));
@@ -68,7 +111,11 @@ class MovieRepository {
     String sortType = 'desc',
     int page = 1,
   }) => _fetch(
-    Uri.parse('$_baseUrl/v1/api/danh-sach/$type').replace(
+    Uri.parse(
+      source == MovieApiSource.kkphim
+          ? '$_baseUrl/v1/api/danh-sach/$type'
+          : '$_baseUrl/danh-sach/$type',
+    ).replace(
       queryParameters: {
         'page': '$page',
         'limit': '24',
@@ -116,15 +163,37 @@ class MovieRepository {
   }
 
   Future<List<Movie>> _fetch(Uri uri) async {
-    final response = await _client.get(uri);
+    final response = await _client.get(
+      uri,
+      headers: const {'accept': 'application/json'},
+    );
     if (response.statusCode < 200 || response.statusCode >= 300) {
       throw Exception('API request failed: ${response.statusCode}');
     }
     final root = jsonDecode(response.body) as Map<String, dynamic>;
     final data = root['data'];
-    final items = data is Map<String, dynamic> ? data['items'] : null;
+    final items =
+        root['items'] ?? (data is Map<String, dynamic> ? data['items'] : data);
     return items is List
-        ? items.whereType<Map<String, dynamic>>().map(Movie.fromJson).toList()
+        ? items
+              .whereType<Map>()
+              .map(
+                (item) => Movie.fromJson(
+                  _normalizeVsmovItem(Map<String, dynamic>.from(item)),
+                ),
+              )
+              .toList()
         : const [];
+  }
+
+  Map<String, dynamic> _normalizeVsmovItem(Map<String, dynamic> item) {
+    if (source != MovieApiSource.vsmov) return item;
+    return {
+      ...item,
+      'poster_url': item['poster_url'] ?? item['poster'] ?? item['image'],
+      'thumb_url': item['thumb_url'] ?? item['thumb'] ?? item['poster_url'],
+      'origin_name': item['origin_name'] ?? item['original_name'],
+      'episode_current': item['episode_current'] ?? item['episode'],
+    };
   }
 }

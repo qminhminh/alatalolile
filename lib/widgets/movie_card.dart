@@ -49,6 +49,7 @@ class _Poster extends StatelessWidget {
           movie.poster,
           fit: BoxFit.cover,
           width: double.infinity,
+          height: double.infinity,
           errorBuilder: (_, __, ___) => const ColoredBox(color: Colors.white10),
         ),
       ),

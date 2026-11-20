@@ -1,14 +1,20 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import '../data/movie_repository.dart';
+
 class AppSidebar extends StatelessWidget {
   const AppSidebar({
     required this.selected,
     required this.onSelected,
+    required this.source,
+    required this.onSourceSelected,
     super.key,
   });
   final int selected;
   final ValueChanged<int> onSelected;
+  final MovieApiSource source;
+  final ValueChanged<MovieApiSource> onSourceSelected;
   @override
   Widget build(BuildContext context) {
     const items = <(IconData, String)>[
@@ -50,7 +56,7 @@ class AppSidebar extends StatelessWidget {
           ...List.generate(
             items.length,
             (i) => Material(
-              color: Colors.transparent,
+              color: const Color(0xFF121214),
               child: ListTile(
                 onTap: () => onSelected(i),
                 selected: selected == i,
@@ -60,16 +66,46 @@ class AppSidebar extends StatelessWidget {
               ),
             ),
           ),
+          const Padding(
+            padding: EdgeInsets.only(left: 14, top: 18, bottom: 8),
+            child: Text(
+              'NGUỒN API',
+              style: TextStyle(color: Colors.white38, fontSize: 11),
+            ),
+          ),
+          ...MovieApiSource.values.map(
+            (item) => Material(
+              color: const Color(0xFF121214),
+              child: ListTile(
+                dense: true,
+                onTap: () => onSourceSelected(item),
+                selected: source == item,
+                selectedTileColor: const Color(0x33FFC107),
+                leading: const Icon(CupertinoIcons.cloud),
+                title: Text(_sourceName(item)),
+              ),
+            ),
+          ),
           const Spacer(),
           const Divider(color: Colors.white12),
-          ListTile(
-            onTap: () => onSelected(10),
-            selected: selected == 10,
-            leading: Icon(CupertinoIcons.heart_fill),
-            title: const Text('Yêu thích'),
+          Material(
+            color: const Color(0xFF121214),
+            child: ListTile(
+              onTap: () => onSelected(10),
+              selected: selected == 10,
+              leading: Icon(CupertinoIcons.heart_fill),
+              title: const Text('Yêu thích'),
+            ),
           ),
         ],
       ),
     );
   }
+
+  String _sourceName(MovieApiSource source) => switch (source) {
+    MovieApiSource.kkphim => 'KKPhim',
+    MovieApiSource.nguonc => 'NguonC',
+    MovieApiSource.vsmov => 'VSMOV / Phim4K',
+    MovieApiSource.tophim => 'Tophim',
+  };
 }
