@@ -21,6 +21,7 @@ class WatchPage extends StatefulWidget {
 class _WatchPageState extends State<WatchPage> {
   late Episode currentEpisode;
   WebViewController? controller;
+  bool hasPlayableSource = false;
   bool showEpisodes = false;
 
   @override
@@ -32,11 +33,13 @@ class _WatchPageState extends State<WatchPage> {
 
   void _loadEpisode(Episode episode) {
     currentEpisode = episode;
-    controller = WebViewController()
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..loadRequest(
-        Uri.parse(episode.embed.isNotEmpty ? episode.embed : episode.m3u8),
-      );
+    final url = episode.embed.isNotEmpty ? episode.embed : episode.m3u8;
+    hasPlayableSource = url.isNotEmpty;
+    controller = hasPlayableSource
+        ? (WebViewController()
+            ..setJavaScriptMode(JavaScriptMode.unrestricted)
+            ..loadRequest(Uri.parse(url)))
+        : null;
     if (mounted) setState(() {});
   }
 
@@ -56,7 +59,9 @@ class _WatchPageState extends State<WatchPage> {
     body: Stack(
       children: [
         Positioned.fill(
-          child: controller == null
+          child: !hasPlayableSource
+              ? const _PlaybackUnavailable()
+              : controller == null
               ? const Center(child: CupertinoActivityIndicator())
               : WebViewWidget(controller: controller!),
         ),
@@ -70,6 +75,27 @@ class _WatchPageState extends State<WatchPage> {
               setState(() => showEpisodes = false);
             },
           ),
+      ],
+    ),
+  );
+}
+
+class _PlaybackUnavailable extends StatelessWidget {
+  const _PlaybackUnavailable();
+
+  @override
+  Widget build(BuildContext context) => Center(
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const Icon(CupertinoIcons.exclamationmark_circle, size: 44),
+        const SizedBox(height: 12),
+        const Text('Tập phim này chưa có nguồn phát.'),
+        const SizedBox(height: 16),
+        CupertinoButton.filled(
+          onPressed: () => Navigator.of(context).maybePop(),
+          child: const Text('Quay lại'),
+        ),
       ],
     ),
   );
