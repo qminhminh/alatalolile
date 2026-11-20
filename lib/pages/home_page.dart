@@ -691,22 +691,26 @@ class _Details extends StatelessWidget {
                     ? MediaQuery.sizeOf(context).width - 60
                     : MediaQuery.sizeOf(context).width - 320,
                 child: Column(
-                  crossAxisAlignment: compact
-                      ? CrossAxisAlignment.center
-                      : CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      movie.name,
-                      textAlign: compact ? TextAlign.center : TextAlign.start,
-                      style: const TextStyle(
-                        fontSize: 30,
-                        fontWeight: FontWeight.bold,
+                    SizedBox(
+                      width: double.infinity,
+                      child: Text(
+                        movie.name,
+                        textAlign: compact ? TextAlign.center : TextAlign.start,
+                        style: const TextStyle(
+                          fontSize: 30,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 12),
-                    Text(
-                      movie.original,
-                      textAlign: compact ? TextAlign.center : TextAlign.start,
+                    SizedBox(
+                      width: double.infinity,
+                      child: Text(
+                        movie.original,
+                        textAlign: compact ? TextAlign.center : TextAlign.start,
+                      ),
                     ),
                     const SizedBox(height: 22),
                     Wrap(
@@ -784,9 +788,7 @@ class _Details extends StatelessWidget {
                     ),
                     const SizedBox(height: 16),
                     Wrap(
-                      alignment: compact
-                          ? WrapAlignment.center
-                          : WrapAlignment.start,
+                      alignment: WrapAlignment.start,
                       spacing: 18,
                       runSpacing: 10,
                       children: [
