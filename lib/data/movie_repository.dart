@@ -10,6 +10,7 @@ class MovieRepository {
   MovieRepository({http.Client? client}) : _client = client ?? http.Client();
   final http.Client _client;
   MovieApiSource source = MovieApiSource.kkphim;
+  int lastTotalPages = 152;
   String get _baseUrl => switch (source) {
     MovieApiSource.kkphim => 'https://phimapi.com',
     MovieApiSource.vsmov => 'https://vsmov.com/api',
@@ -17,6 +18,7 @@ class MovieRepository {
 
   void setSource(MovieApiSource value) => source = value;
   Future<List<Movie>> latest() async {
+    lastTotalPages = 1;
     final path = switch (source) {
       MovieApiSource.kkphim => 'danh-sach/phim-moi-cap-nhat-v3',
       MovieApiSource.vsmov => 'danh-sach/phim-moi-cap-nhat',
@@ -30,6 +32,7 @@ class MovieRepository {
       throw Exception('Không thể tải phim mới');
     }
     final root = jsonDecode(response.body) as Map<String, dynamic>;
+    _updatePagination(root);
     final items = root['items'];
     return items is List
         ? items
@@ -164,6 +167,14 @@ class MovieRepository {
       throw Exception('Không thể tải chi tiết phim');
     }
     final root = jsonDecode(response.body) as Map<String, dynamic>;
+    final pagination = root['pagination'];
+    if (pagination is Map) {
+      lastTotalPages =
+          int.tryParse(
+            '${pagination['totalPages'] ?? pagination['total_page'] ?? 152}',
+          ) ??
+          152;
+    }
     final item = Map<String, dynamic>.from(root['movie'] as Map);
     final base = Movie.fromJson(item);
     final movieEpisodes = item['episodes'];
@@ -213,6 +224,7 @@ class MovieRepository {
   }
 
   Future<List<Movie>> _fetch(Uri uri) async {
+    lastTotalPages = 1;
     final response = await _client.get(
       uri,
       headers: const {'accept': 'application/json'},
@@ -221,6 +233,7 @@ class MovieRepository {
       throw Exception('API request failed: ${response.statusCode}');
     }
     final root = jsonDecode(response.body) as Map<String, dynamic>;
+    _updatePagination(root);
     final data = root['data'];
     final items =
         root['items'] ?? (data is Map<String, dynamic> ? data['items'] : data);
@@ -245,5 +258,26 @@ class MovieRepository {
       'origin_name': item['origin_name'] ?? item['original_name'],
       'episode_current': item['episode_current'] ?? item['episode'],
     };
+  }
+
+  void _updatePagination(Map<String, dynamic> root) {
+    final data = root['data'];
+    final raw =
+        root['pagination'] ??
+        (data is Map
+            ? data['pagination'] ??
+                  (data['params'] is Map
+                      ? (data['params'] as Map)['pagination']
+                      : null)
+            : null);
+    if (raw is! Map) return;
+    final value =
+        raw['totalPages'] ??
+        raw['total_pages'] ??
+        raw['total_page'] ??
+        raw['lastPage'] ??
+        raw['last_page'];
+    final parsed = int.tryParse('$value');
+    if (parsed != null && parsed > 0) lastTotalPages = parsed;
   }
 }

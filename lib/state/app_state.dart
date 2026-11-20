@@ -18,7 +18,7 @@ class AppState extends ChangeNotifier {
   String activeTitle = 'Phim mới cập nhật';
   String? activeSlug;
   int currentPage = 1;
-  final int totalPages = 152;
+  int totalPages = 152;
   List<Map<String, String>> categories = const [];
   List<Map<String, String>> countries = const [];
   String sortField = 'modified.time';
@@ -131,6 +131,8 @@ class AppState extends ChangeNotifier {
     String newSortField = 'modified.time',
     String newSortType = 'desc',
   }) async {
+    // A new filter is a new result set, so always start from its first page.
+    currentPage = 1;
     language = newLanguage;
     category = newCategory;
     country = newCountry;
@@ -208,6 +210,7 @@ class AppState extends ChangeNotifier {
     notifyListeners();
     try {
       movies = await request();
+      totalPages = repository.lastTotalPages;
     } catch (exception) {
       error = exception.toString();
     } finally {
