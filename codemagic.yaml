@@ -6,6 +6,8 @@ workflows:
 
     environment:
       flutter: stable
+      vars:
+        CXXFLAGS: /D_SILENCE_EXPERIMENTAL_COROUTINE_DEPRECATION_WARNINGS
 
     scripts:
       - name: Get Flutter packages

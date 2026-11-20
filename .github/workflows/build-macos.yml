@@ -1,0 +1,51 @@
+name: Build Flutter macOS Release
+
+on:
+  push:
+    branches: [main, master, windown]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build_macos:
+    name: Build macOS Release
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Enable macOS desktop
+        run: flutter config --enable-macos-desktop
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Analyze project
+        run: flutter analyze
+
+      - name: Build macOS Release
+        run: flutter build macos --release
+
+      - name: Create macOS archive
+        run: |
+          APP_PATH=$(find build/macos/Build/Products/Release \
+            -maxdepth 1 -name '*.app' -print -quit)
+          ditto -c -k --sequesterRsrc --keepParent "$APP_PATH" \
+            app-macos-release.zip
+
+      - name: Upload macOS artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: macOS-Release-Build
+          path: app-macos-release.zip

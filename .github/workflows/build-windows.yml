@@ -29,6 +29,8 @@ jobs:
         run: flutter pub get
 
       - name: 5. Build Windows Release
+        env:
+          CXXFLAGS: /D_SILENCE_EXPERIMENTAL_COROUTINE_DEPRECATION_WARNINGS
         run: flutter build windows --release
 
       - name: 6. Nén thư mục Release thành file ZIP

@@ -35,6 +35,8 @@ jobs:
         run: flutter analyze
 
       - name: Build Windows
+        env:
+          CXXFLAGS: /D_SILENCE_EXPERIMENTAL_COROUTINE_DEPRECATION_WARNINGS
         run: flutter build windows --release
 
       - name: Create Windows archive
