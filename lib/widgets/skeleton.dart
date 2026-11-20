@@ -27,7 +27,7 @@ class _SkeletonBoxState extends State<SkeletonBox>
   @override
   Widget build(BuildContext context) => AnimatedBuilder(
     animation: controller,
-    builder: (_, __) => Container(
+    builder: (context, child) => Container(
       width: widget.width,
       height: widget.height,
       decoration: BoxDecoration(
@@ -58,7 +58,7 @@ class MovieSkeletonGrid extends StatelessWidget {
       crossAxisSpacing: 18,
       mainAxisSpacing: 24,
     ),
-    itemBuilder: (_, __) => Column(
+    itemBuilder: (context, index) => Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Expanded(

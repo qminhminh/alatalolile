@@ -50,14 +50,15 @@ class _Poster extends StatelessWidget {
           fit: BoxFit.cover,
           width: double.infinity,
           height: double.infinity,
-          errorBuilder: (_, __, ___) => const ColoredBox(color: Colors.white10),
+          errorBuilder: (context, error, stackTrace) =>
+              const ColoredBox(color: Colors.white10),
         ),
       ),
       Positioned(
         top: 8,
         left: 8,
         child: Consumer<AppState>(
-          builder: (_, state, __) => GestureDetector(
+          builder: (context, state, child) => GestureDetector(
             onTap: () => state.toggleFavorite(movie),
             child: CircleAvatar(
               radius: 16,
