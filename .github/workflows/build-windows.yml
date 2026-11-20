@@ -2,9 +2,9 @@ name: Build Flutter Windows Release
 
 on:
   push:
-    branches: [ main, master ] # Tự động chạy khi push code lên nhánh main hoặc master
+    branches: [main, master, windown]
   pull_request:
-    branches: [ main, master ]
+    branches: [main, master, windown]
   workflow_dispatch: # Cho phép bấm nút chạy thủ công bất cứ lúc nào
 
 jobs:
