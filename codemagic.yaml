@@ -49,7 +49,8 @@ workflows:
       - name: Package macOS application
         script: |
           cd build/macos/Build/Products/Release
-          ditto -c -k --sequesterRsrc --keepParent alatalolile.app \
+          APP_PATH=$(find . -maxdepth 1 -name '*.app' -print -quit)
+          ditto -c -k --sequesterRsrc --keepParent "$APP_PATH" \
             ../../../../../alatalolile-macos.zip
 
     artifacts:
