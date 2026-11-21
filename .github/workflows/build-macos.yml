@@ -1,4 +1,4 @@
-name: Build Flutter macOS Release
+name: Build Flutter macOS
 
 on:
   push:
