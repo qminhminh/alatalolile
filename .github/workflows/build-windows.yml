@@ -1,4 +1,4 @@
-name: Build Flutter Windows
+name: Build Windows
 
 on:
   push:
